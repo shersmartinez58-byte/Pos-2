@@ -161,7 +161,7 @@ export const Settings: React.FC<SettingsProps> = ({ users, onUpdateUsers, busine
           <div><span className="text-gray-500">Versión:</span> <span className="font-medium">1.0.0</span></div>
           <div><span className="text-gray-500">Licencia:</span> <span className="font-medium">Comercial</span></div>
           <div><span className="text-gray-500">Base datos:</span> <span className="font-medium">Local</span></div>
-          <div><span className="text-gray-500">Impresora:</span> <span className="font-medium">Térmica 80mm</span></div>
+          <div><span className="text-gray-500">Impresora:</span> <span className="font-medium">Térmica 58mm</span></div>
         </div>
       </div>
     </div>
