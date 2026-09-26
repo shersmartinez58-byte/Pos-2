@@ -24,84 +24,80 @@ const navItems: { page: Page; label: string; icon: React.ReactNode; adminOnly?: 
 ];
 
 export const Layout: React.FC<LayoutProps> = ({ user, currentPage, onNavigate, onLogout, children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const filteredNav = navItems.filter(item => !item.adminOnly || user.role === 'admin');
 
   return (
-    <div className="h-screen flex bg-gray-100 overflow-hidden">
+    <div className="h-screen flex bg-slate-50 overflow-hidden">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-60' : 'w-16'} bg-gradient-to-b from-slate-900 to-slate-800 flex flex-col transition-all duration-300 hidden md:flex`}>
-        {/* Logo */}
-        <div className="p-4 border-b border-white/10">
+      <aside className="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col">
+        <div className="p-6 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center">
               <span className="text-lg">🏪</span>
             </div>
-            {sidebarOpen && (
-              <div className="min-w-0">
-                <p className="text-white font-bold text-sm truncate">Depósito</p>
-                <p className="text-amber-400 text-xs truncate">San Juditas</p>
-              </div>
-            )}
+            <div>
+              <p className="font-semibold text-slate-800 text-sm">San Juditas</p>
+              <p className="text-xs text-slate-400">Sistema POS</p>
+            </div>
           </div>
         </div>
 
-        {/* Nav */}
-        <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
+        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
           {filteredNav.map(item => (
             <button
               key={item.page}
               onClick={() => onNavigate(item.page)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-left ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
                 currentPage === item.page
-                  ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
               }`}
-              title={item.label}
             >
               {item.icon}
-              {sidebarOpen && <span className="text-sm font-medium truncate">{item.label}</span>}
+              <span className="text-sm font-medium">{item.label}</span>
             </button>
           ))}
         </nav>
 
-        {/* Toggle */}
-        <div className="p-2 border-t border-white/10">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="w-full flex items-center justify-center p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
+        <div className="p-4 border-t border-slate-100">
+          <div className="flex items-center gap-3 px-3 py-2">
+            <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
+              <span className="text-slate-600 font-semibold text-sm">{user.name.charAt(0)}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-800 truncate">{user.name}</p>
+              <p className="text-xs text-slate-400 capitalize">{user.role === 'admin' ? 'Admin' : 'Cajero'}</p>
+            </div>
+          </div>
         </div>
       </aside>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setMobileMenuOpen(false)} />
-          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-slate-900 flex flex-col">
-            <div className="p-4 border-b border-white/10 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🏪</span>
-                <span className="text-white font-bold">San Juditas</span>
+          <aside className="absolute left-0 top-0 bottom-0 w-72 bg-white flex flex-col">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🏪</span>
+                <span className="font-semibold text-slate-800">San Juditas</span>
               </div>
-              <button onClick={() => setMobileMenuOpen(false)} className="text-gray-400">
+              <button onClick={() => setMobileMenuOpen(false)} className="text-slate-400">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <nav className="flex-1 py-4 px-2 space-y-1">
+            <nav className="flex-1 py-4 px-3 space-y-1">
               {filteredNav.map(item => (
                 <button
                   key={item.page}
                   onClick={() => { onNavigate(item.page); setMobileMenuOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     currentPage === item.page
-                      ? 'bg-amber-500/20 text-amber-400'
-                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                      ? 'bg-slate-900 text-white'
+                      : 'text-slate-600 hover:bg-slate-100'
                   }`}
                 >
                   {item.icon}
@@ -116,44 +112,42 @@ export const Layout: React.FC<LayoutProps> = ({ user, currentPage, onNavigate, o
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b shadow-sm px-4 py-2 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center gap-3">
+        <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
+              className="md:hidden p-2 hover:bg-slate-100 rounded-lg"
             >
-              <Menu className="w-5 h-5 text-gray-600" />
+              <Menu className="w-5 h-5 text-slate-600" />
             </button>
-            <h1 className="text-lg font-bold text-gray-800">
+            <h1 className="text-lg font-semibold text-slate-800">
               {navItems.find(n => n.page === currentPage)?.label || 'Dashboard'}
             </h1>
           </div>
 
-          {/* User Menu */}
           <div className="relative">
             <button
               onClick={() => setUserMenuOpen(!userMenuOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors"
             >
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-blue-600 font-bold text-sm">{user.name.charAt(0)}</span>
+              <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
+                <span className="text-slate-600 font-semibold text-sm">{user.name.charAt(0)}</span>
               </div>
               <div className="hidden sm:block text-left">
-                <p className="text-sm font-medium text-gray-800">{user.name}</p>
-                <p className="text-xs text-gray-500 capitalize">{user.role === 'admin' ? 'Admin' : 'Cajero'}</p>
+                <p className="text-sm font-medium text-slate-800">{user.name}</p>
               </div>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
+              <ChevronDown className="w-4 h-4 text-slate-400" />
             </button>
 
             {userMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border py-1 z-50">
-                <div className="px-3 py-2 border-b">
-                  <p className="text-sm font-medium">{user.name}</p>
-                  <p className="text-xs text-gray-500">@{user.username}</p>
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50">
+                <div className="px-4 py-2 border-b border-slate-100">
+                  <p className="text-sm font-medium text-slate-800">{user.name}</p>
+                  <p className="text-xs text-slate-400">@{user.username}</p>
                 </div>
                 <button
                   onClick={onLogout}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   Cerrar Sesión
@@ -163,7 +157,6 @@ export const Layout: React.FC<LayoutProps> = ({ user, currentPage, onNavigate, o
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 overflow-auto">
           {children}
         </main>

@@ -1,38 +1,35 @@
 @import "tailwindcss";
 
-/* Custom scrollbar */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: #f8fafc;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f3f4f6;
-  border-radius: 4px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 4px;
+  background: #cbd5e1;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: #94a3b8;
 }
 
-body {
-  background-color: #f3f4f6;
-  color: #111827;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* Line clamp utility */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -40,7 +37,6 @@ body {
   overflow: hidden;
 }
 
-/* Animation for notification */
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -56,7 +52,6 @@ body {
   animation: slideUp 0.3s ease-out;
 }
 
-/* Print styles */
 @media print {
   body * {
     visibility: hidden;
@@ -68,6 +63,6 @@ body {
     position: absolute;
     left: 0;
     top: 0;
-    width: 80mm;
+    width: 58mm;
   }
 }

@@ -91,12 +91,9 @@ export const Inventory: React.FC<InventoryProps> = ({ products, onUpdateStock })
                   <td className="p-3 font-mono text-xs text-gray-500">{product.barcode}</td>
                   <td className="p-3"><span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs">{product.category}</span></td>
                   <td className="p-3">
-                    <div className="flex gap-1 flex-wrap">
-                      {product.units.map(u => (
-                        <span key={u.id} className="px-2 py-0.5 bg-gray-100 rounded text-xs">
-                          {u.name}: ${u.price.toFixed(2)}
-                        </span>
-                      ))}
+                    <div className="text-sm">
+                      <span className="font-medium">${product.price.toFixed(2)}</span>
+                      <span className="text-gray-400 text-xs ml-2">Consumo: ${product.ownConsumptionPrice.toFixed(2)}</span>
                     </div>
                   </td>
                   <td className="p-3 text-center">${product.cost.toFixed(2)}</td>

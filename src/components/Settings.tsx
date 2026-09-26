@@ -31,7 +31,7 @@ export const Settings: React.FC<SettingsProps> = ({ users, onUpdateUsers, busine
       username: newUsername,
       name: newName,
       role: newRole,
-      pin: newPin,
+      password: newPin,
       active: true,
     };
     onUpdateUsers([...users, newUser]);
@@ -135,7 +135,7 @@ export const Settings: React.FC<SettingsProps> = ({ users, onUpdateUsers, busine
                 </div>
                 <div>
                   <p className="font-medium text-gray-800">{user.name}</p>
-                  <p className="text-xs text-gray-500">@{user.username} • PIN: {user.pin} • <span className="capitalize">{user.role === 'admin' ? 'Administrador' : 'Cajero'}</span></p>
+                  <p className="text-xs text-gray-500">@{user.username} • Contraseña: {user.password} • <span className="capitalize">{user.role === 'admin' ? 'Administrador' : 'Cajero'}</span></p>
                 </div>
               </div>
               <div className="flex items-center gap-2">

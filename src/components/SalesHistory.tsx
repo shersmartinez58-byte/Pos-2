@@ -139,8 +139,8 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({ tickets, onPrint }) 
               </div>
               {selectedTicket.items.map((item, i) => (
                 <div key={i} className="flex justify-between">
-                  <span className="truncate pr-2">{item.product.name} ({item.unit.name})</span>
-                  <span>{item.quantity}x${item.unit.price.toFixed(2)}</span>
+                  <span className="truncate pr-2">{item.product.name}</span>
+                  <span>{item.quantity}x${item.product.price.toFixed(2)}</span>
                 </div>
               ))}
               <div className="border-t border-dashed pt-2 space-y-0.5">
