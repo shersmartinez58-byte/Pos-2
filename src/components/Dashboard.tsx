@@ -25,7 +25,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tickets, products }) => {
     t.items.forEach(item => {
       const key = item.product.id;
       if (!productSales[key]) productSales[key] = { name: item.product.name, qty: 0, total: 0 };
-      const price = item.isCase ? item.product.casePrice : item.product.unitPrice;
+      const price = item.isCase ? (item.product.casePrice || 0) : (item.product.unitPrice || 0);
       productSales[key].qty += item.quantity;
       productSales[key].total += price * item.quantity;
     });

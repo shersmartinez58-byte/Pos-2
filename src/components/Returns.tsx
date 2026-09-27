@@ -56,7 +56,7 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
     selectedItems.forEach(itemId => {
       const item = selectedTicket.items.find(i => `${i.product.id}-${i.isCase}` === itemId);
       if (item) {
-        const price = item.isCase ? item.product.casePrice : item.product.unitPrice;
+        const price = item.isCase ? (item.product.casePrice || 0) : (item.product.unitPrice || 0);
         refund += price * item.quantity;
       }
     });
@@ -218,12 +218,12 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
                                 {item.isCase && <span className="ml-2 text-xs text-slate-500">(Caja)</span>}
                               </div>
                               <div className="text-xs text-slate-500 mt-1">
-                                Cantidad: {item.quantity} × ${item.isCase ? item.product.casePrice.toFixed(2) : item.product.unitPrice.toFixed(2)}
+                                Cantidad: {item.quantity} × ${(item.isCase ? (item.product.casePrice || 0) : (item.product.unitPrice || 0)).toFixed(2)}
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-bold text-slate-800">
-                                ${(item.isCase ? item.product.casePrice : item.product.unitPrice) * item.quantity}
+                                ${((item.isCase ? (item.product.casePrice || 0) : (item.product.unitPrice || 0)) * item.quantity).toFixed(2)}
                               </span>
                               {isSelected && <CheckCircle className="w-5 h-5 text-slate-900" />}
                             </div>

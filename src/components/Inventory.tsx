@@ -253,9 +253,9 @@ export const Inventory: React.FC<InventoryProps> = ({ products, onUpdateStock, o
                     <div>U: {product.barcode}</div>
                     {product.barcodeCase && <div>C: {product.barcodeCase}</div>}
                   </td>
-                  <td className="p-2 text-center">${product.cost.toFixed(2)}</td>
-                  <td className="p-2 text-center font-medium">${product.unitPrice.toFixed(2)}</td>
-                  <td className="p-2 text-center font-medium">${product.casePrice.toFixed(2)}</td>
+                  <td className="p-2 text-center">${(product.cost || 0).toFixed(2)}</td>
+                  <td className="p-2 text-center font-medium">${(product.unitPrice || 0).toFixed(2)}</td>
+                  <td className="p-2 text-center font-medium">${(product.casePrice || 0).toFixed(2)}</td>
                   <td className="p-2 text-center">
                     {editingId === product.id ? (
                       <input type="number" value={editValue} onChange={e => setEditValue(e.target.value)} onBlur={() => { onUpdateStock(product.id, parseInt(editValue) || 0); setEditingId(null); }} onKeyDown={e => { if (e.key === 'Enter') { onUpdateStock(product.id, parseInt(editValue) || 0); setEditingId(null); } }} className="w-14 px-1 py-0.5 border rounded text-center text-xs" autoFocus />

@@ -32,13 +32,13 @@ export const POS: React.FC<POSProps> = ({ products, kits, cashierName, userRole,
   const ticketCounter = useRef(tickets.length + 1);
 
   const getItemPrice = useCallback((product: Product, isCase: boolean, ownConsumption: boolean) => {
-    if (ownConsumption) return product.ownConsumptionPrice;
-    return isCase ? product.casePrice : product.unitPrice;
+    if (ownConsumption) return product.ownConsumptionPrice || 0;
+    return isCase ? (product.casePrice || 0) : (product.unitPrice || 0);
   }, []);
 
   const getKitPrice = useCallback((kit: Kit, ownConsumption: boolean) => {
-    if (ownConsumption) return kit.cost;
-    return kit.price;
+    if (ownConsumption) return kit.cost || 0;
+    return kit.price || 0;
   }, []);
 
   const subtotal = useMemo(() => {
@@ -289,7 +289,7 @@ export const POS: React.FC<POSProps> = ({ products, kits, cashierName, userRole,
                 <div key={product.id} className="bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-md transition-all group">
                   <div className="p-2 text-center">
                     <p className="text-[11px] font-medium text-slate-800 truncate leading-tight">{product.name}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Stock: {product.stock}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Stock: {product.stock || 0}</p>
                   </div>
                   <div className={`border-t border-slate-100 grid ${hasKit ? 'grid-cols-3' : 'grid-cols-2'}`}>
                     <button
@@ -297,15 +297,15 @@ export const POS: React.FC<POSProps> = ({ products, kits, cashierName, userRole,
                       className={`py-1.5 text-[10px] font-medium transition-colors ${!defaultIsCase && !hasKit ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
                     >
                       <div>Unidad</div>
-                      <div className="font-bold">${product.unitPrice.toFixed(2)}</div>
+                      <div className="font-bold">${(product.unitPrice || 0).toFixed(2)}</div>
                     </button>
-                    {product.caseQty > 1 && (
+                    {(product.caseQty || 0) > 1 && (
                       <button
                         onClick={() => addToCart(product, true)}
                         className={`py-1.5 text-[10px] font-medium transition-colors border-l border-slate-100 ${defaultIsCase && !hasKit ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
                       >
                         <div>Caja ({product.caseQty})</div>
-                        <div className="font-bold">${product.casePrice.toFixed(2)}</div>
+                        <div className="font-bold">${(product.casePrice || 0).toFixed(2)}</div>
                       </button>
                     )}
                     {hasKit && (
@@ -314,7 +314,7 @@ export const POS: React.FC<POSProps> = ({ products, kits, cashierName, userRole,
                         className={`py-1.5 text-[10px] font-medium transition-colors border-l border-slate-100 bg-purple-50 text-purple-700 hover:bg-purple-100`}
                       >
                         <div>Kit</div>
-                        <div className="font-bold">${productKits[0].price.toFixed(2)}</div>
+                        <div className="font-bold">${(productKits[0].price || 0).toFixed(2)}</div>
                       </button>
                     )}
                   </div>

@@ -61,7 +61,7 @@ export const Kits: React.FC<KitsProps> = ({ kits, products, onAddKit, onUpdateKi
     return formData.items.reduce((total, item) => {
       const product = products.find(p => p.id === item.productId);
       if (product) {
-        return total + (product.cost * item.quantity);
+        return total + ((product.cost || 0) * item.quantity);
       }
       return total;
     }, 0);

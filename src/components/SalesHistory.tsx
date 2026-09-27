@@ -138,7 +138,7 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({ tickets, onPrint }) 
                 <p className="text-gray-500">Cajero: {selectedTicket.cashier}</p>
               </div>
               {selectedTicket.items.map((item, i) => {
-                const price = item.isCase ? item.product.casePrice : item.product.unitPrice;
+                const price = item.isCase ? (item.product.casePrice || 0) : (item.product.unitPrice || 0);
                 return (
                   <div key={`i-${i}`} className="flex justify-between">
                     <span className="truncate pr-2">{item.product.name}{item.isCase ? ' (Caja)' : ''}</span>
