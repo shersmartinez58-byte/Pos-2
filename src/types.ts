@@ -1,11 +1,14 @@
 export interface Product {
   id: string;
   barcode: string;
+  barcodeCase?: string;
   name: string;
-  category: string;
+  icon: string; // emoji
   cost: number;
-  price: number;
-  ownConsumptionPrice: number; // Precio especial para consumo propio
+  unitPrice: number;
+  casePrice: number;
+  caseQty: number; // cuántas unidades trae la caja
+  ownConsumptionPrice: number;
   stock: number;
   minStock: number;
 }
@@ -13,6 +16,7 @@ export interface Product {
 export interface CartItem {
   product: Product;
   quantity: number;
+  isCase: boolean; // true = por caja, false = por unidad
   isOwnConsumption: boolean;
 }
 
