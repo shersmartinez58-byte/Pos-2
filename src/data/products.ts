@@ -1,0 +1,28 @@
+import { Product } from '../types';
+
+export const products: Product[] = [
+  { id: '1', barcode: '7501000000001', barcodeCase: '7501000000101', name: 'Coca Cola 600ml', icon: '🥤', cost: 12, unitPrice: 18, casePrice: 380, caseQty: 24, ownConsumptionPrice: 14, stock: 200, minStock: 24 },
+  { id: '2', barcode: '7501000000002', barcodeCase: '7501000000102', name: 'Pepsi 600ml', icon: '🥤', cost: 11, unitPrice: 17, casePrice: 360, caseQty: 24, ownConsumptionPrice: 13, stock: 150, minStock: 24 },
+  { id: '3', barcode: '7501000000003', barcodeCase: '7501000000103', name: 'Agua Natural 1L', icon: '💧', cost: 6, unitPrice: 12, casePrice: 240, caseQty: 24, ownConsumptionPrice: 9, stock: 500, minStock: 48 },
+  { id: '4', barcode: '7501000000004', barcodeCase: '7501000000104', name: 'Jugo de Naranja 1L', icon: '🧃', cost: 18, unitPrice: 28, casePrice: 300, caseQty: 12, ownConsumptionPrice: 22, stock: 60, minStock: 12 },
+  { id: '5', barcode: '7501000000005', name: 'Café Soluble 200g', icon: '☕', cost: 55, unitPrice: 85, casePrice: 85, caseQty: 1, ownConsumptionPrice: 70, stock: 40, minStock: 10 },
+  { id: '6', barcode: '7501000000006', barcodeCase: '7501000000106', name: 'Sabritas Original', icon: '🍟', cost: 14, unitPrice: 22, casePrice: 580, caseQty: 30, ownConsumptionPrice: 18, stock: 120, minStock: 24 },
+  { id: '7', barcode: '7501000000007', barcodeCase: '7501000000107', name: 'Doritos Nachos', icon: '🔺', cost: 15, unitPrice: 24, casePrice: 620, caseQty: 30, ownConsumptionPrice: 20, stock: 100, minStock: 24 },
+  { id: '8', barcode: '7501000000008', barcodeCase: '7501000000108', name: 'Galletas Marías', icon: '🍪', cost: 9, unitPrice: 15, casePrice: 155, caseQty: 12, ownConsumptionPrice: 12, stock: 80, minStock: 20 },
+  { id: '9', barcode: '7501000000009', barcodeCase: '7501000000109', name: 'Chocolate Carlos V', icon: '🍫', cost: 7, unitPrice: 12, casePrice: 400, caseQty: 40, ownConsumptionPrice: 10, stock: 200, minStock: 40 },
+  { id: '10', barcode: '7501000000010', barcodeCase: '7501000000110', name: 'Paleta Payaso', icon: '🍭', cost: 4.5, unitPrice: 8, casePrice: 130, caseQty: 20, ownConsumptionPrice: 6, stock: 300, minStock: 50 },
+  { id: '11', barcode: '7501000000011', name: 'Pan Bimbo Grande', icon: '🍞', cost: 35, unitPrice: 52, casePrice: 52, caseQty: 1, ownConsumptionPrice: 45, stock: 40, minStock: 10 },
+  { id: '12', barcode: '7501000000012', name: 'Tortillas 1kg', icon: '🫓', cost: 12, unitPrice: 18, casePrice: 18, caseQty: 1, ownConsumptionPrice: 15, stock: 60, minStock: 15 },
+  { id: '13', barcode: '7501000000013', barcodeCase: '7501000000113', name: 'Leche Entera 1L', icon: '🥛', cost: 18, unitPrice: 26, casePrice: 280, caseQty: 12, ownConsumptionPrice: 22, stock: 80, minStock: 20 },
+  { id: '14', barcode: '7501000000014', name: 'Yogurt Natural', icon: '🍶', cost: 12, unitPrice: 19, casePrice: 19, caseQty: 1, ownConsumptionPrice: 16, stock: 50, minStock: 12 },
+  { id: '15', barcode: '7501000000015', barcodeCase: '7501000000115', name: 'Queso Oaxaca 250g', icon: '🧀', cost: 45, unitPrice: 65, casePrice: 240, caseQty: 4, ownConsumptionPrice: 55, stock: 30, minStock: 8 },
+  { id: '16', barcode: '7501000000016', name: 'Huevo 1kg', icon: '🥚', cost: 32, unitPrice: 48, casePrice: 48, caseQty: 1, ownConsumptionPrice: 42, stock: 50, minStock: 10 },
+  { id: '17', barcode: '7501000000017', barcodeCase: '7501000000117', name: 'Arroz 1kg', icon: '🍚', cost: 18, unitPrice: 28, casePrice: 600, caseQty: 25, ownConsumptionPrice: 24, stock: 80, minStock: 20 },
+  { id: '18', barcode: '7501000000018', barcodeCase: '7501000000118', name: 'Frijol 1kg', icon: '🫘', cost: 24, unitPrice: 35, casePrice: 750, caseQty: 25, ownConsumptionPrice: 30, stock: 70, minStock: 15 },
+  { id: '19', barcode: '7501000000019', barcodeCase: '7501000000119', name: 'Aceite 1L', icon: '🛢️', cost: 28, unitPrice: 42, casePrice: 450, caseQty: 12, ownConsumptionPrice: 36, stock: 50, minStock: 12 },
+  { id: '20', barcode: '7501000000020', barcodeCase: '7501000000120', name: 'Atún en lata', icon: '🐟', cost: 14, unitPrice: 22, casePrice: 900, caseQty: 48, ownConsumptionPrice: 18, stock: 100, minStock: 24 },
+  { id: '21', barcode: '7501000000021', barcodeCase: '7501000000121', name: 'Refresco 2L', icon: '🍾', cost: 20, unitPrice: 32, casePrice: 340, caseQty: 12, ownConsumptionPrice: 26, stock: 90, minStock: 12 },
+  { id: '22', barcode: '7501000000022', barcodeCase: '7501000000122', name: 'Cerveza 355ml', icon: '🍺', cost: 15, unitPrice: 24, casePrice: 480, caseQty: 24, ownConsumptionPrice: 20, stock: 180, minStock: 24 },
+  { id: '23', barcode: '7501000000023', barcodeCase: '7501000000123', name: 'Papas Ruffles', icon: '🥔', cost: 16, unitPrice: 25, casePrice: 650, caseQty: 30, ownConsumptionPrice: 21, stock: 80, minStock: 20 },
+  { id: '24', barcode: '7501000000024', barcodeCase: '7501000000124', name: 'Gomitas', icon: '🍬', cost: 5, unitPrice: 10, casePrice: 350, caseQty: 50, ownConsumptionPrice: 8, stock: 250, minStock: 40 },
+];
