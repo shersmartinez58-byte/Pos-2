@@ -1,103 +1,86 @@
 # Depósito San Juditas - Sistema POS
 
-Sistema de Punto de Venta completo para Depósito San Juditas con integración de Firebase en tiempo real.
+Sistema de punto de venta completo para Depósito San Juditas con soporte para Firebase y modo local.
 
 ## Características
 
-- ✅ **Autenticación**: Login con usuario y contraseña
-- ✅ **Punto de Venta**: Venta por unidad, caja y kits
-- ✅ **Devoluciones**: Procesamiento de devoluciones con reintegro de stock
-- ✅ **Inventario**: Gestión completa de productos
-- ✅ **Kits**: Creación y gestión de kits de productos
-- ✅ **Ajustes de Inventario**: Correcciones y ajustes de stock
-- ✅ **Promociones**: Descuentos y ofertas
-- ✅ **Historial**: Registro completo de ventas
-- ✅ **Configuraciones**: Gestión de usuarios y datos del negocio
-- ✅ **Impresión**: Tickets optimizados para impresoras de 58mm
-- ✅ **Consumo Propio**: Modo especial con precios diferenciados
-- ✅ **Firebase**: Base de datos en tiempo real
+- ✅ Autenticación con usuario y contraseña
+- ✅ Punto de venta con búsqueda por nombre o código de barras
+- ✅ Venta por unidad, caja o kit
+- ✅ Sistema de devoluciones
+- ✅ Gestión de inventario
+- ✅ Kits de productos
+- ✅ Ajustes de inventario
+- ✅ Promociones y descuentos
+- ✅ Historial de ventas
+- ✅ Configuraciones
+- ✅ Impresión de tickets (58mm)
+- ✅ Modo consumo propio
+- ✅ Sincronización en tiempo real con Firebase
+- ✅ Modo local (funciona sin Firebase)
 
-## Configuración de Firebase
+## Configuración
 
-### 1. Crear proyecto en Firebase
+### Modo Local (Sin Firebase)
 
-1. Ve a [Firebase Console](https://console.firebase.google.com/)
-2. Crea un nuevo proyecto llamado "depositosanjudas-praxis"
-3. Habilita Firestore Database
-4. Configura las reglas de seguridad (ver abajo)
+La aplicación funciona automáticamente en modo local si Firebase no está disponible. Los datos se guardan en el estado de la aplicación y se pierden al recargar la página.
 
-### 2. Configurar Firestore
+### Modo Firebase (Recomendado para producción)
 
-Ve a Firestore Database y crea las siguientes colecciones:
+1. **Crear proyecto en Firebase**
+   - Ve a [Firebase Console](https://console.firebase.google.com/)
+   - Crea un nuevo proyecto llamado "depositosanjudas-praxis"
+   - Habilita Firestore Database
 
-- `products` - Productos del inventario
-- `kits` - Kits de productos
-- `tickets` - Historial de ventas
-- `users` - Usuarios del sistema
-- `promotions` - Promociones activas
-- `adjustments` - Ajustes de inventario
-- `settings` - Configuración general
+2. **Configurar Firestore**
+   - Ve a Firestore Database
+   - Crea las siguientes colecciones:
+     - `products`
+     - `kits`
+     - `tickets`
+     - `users`
+     - `promotions`
+     - `adjustments`
+     - `settings`
 
-### 3. Reglas de seguridad de Firestore
+3. **Reglas de seguridad**
+   ```javascript
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /{document=**} {
+         allow read, write: if true;
+       }
+     }
+   }
+   ```
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
-    }
-  }
-}
-```
+4. **Configurar credenciales**
+   - Ve a Configuración del proyecto > Tus aplicaciones
+   - Copia las credenciales de configuración web
+   - Reemplaza las credenciales en `src/firebase.ts`
 
-**Nota**: Para producción, implementa autenticación de Firebase y ajusta las reglas.
+5. **Instalar dependencias**
+   ```bash
+   npm install
+   ```
 
-### 4. Configuración del proyecto
-
-La configuración de Firebase ya está en `src/firebase.ts`:
-
-```javascript
-const firebaseConfig = {
-  apiKey: "AIzaSyA49mQIpqvNORehX7fvs_EB5xTcKWSC2hU",
-  authDomain: "depositosanjudas-praxis.firebaseapp.com",
-  projectId: "depositosanjudas-praxis",
-  storageBucket: "depositosanjudas-praxis.firebasestorage.app",
-  messagingSenderId: "405711005956",
-  appId: "1:405711005956:web:b7b93ea358b3342e5cc851",
-  measurementId: "G-VMZKVK53XM"
-};
-```
+6. **Ejecutar la aplicación**
+   ```bash
+   npm run dev
+   ```
 
 ## Usuarios por defecto
 
-Cuando la base de datos está vacía, se crean automáticamente estos usuarios:
+Cuando la base de datos está vacía, se crean automáticamente:
 
-- **Administrador**: admin / admin123
+- **Admin**: admin / admin123
 - **Cajero 1**: cajero1 / 1234
 - **Cajero 2**: cajero2 / 5678
 
 ## Productos por defecto
 
-Cuando la base de datos está vacía, se cargan 24 productos de ejemplo incluyendo:
-- Bebidas (Coca Cola, Pepsi, Agua, etc.)
-- Botanas (Sabritas, Doritos, etc.)
-- Dulces (Chocolate, Paletas, Gomitas, etc.)
-- Lácteos (Leche, Yogurt, Queso, etc.)
-- Abarrotes (Arroz, Frijol, Aceite, etc.)
-
-## Instalación
-
-```bash
-# Instalar dependencias
-npm install
-
-# Ejecutar en desarrollo
-npm run dev
-
-# Compilar para producción
-npm run build
-```
+Se cargan 24 productos de ejemplo cuando la base de datos está vacía.
 
 ## Estructura del proyecto
 
@@ -105,16 +88,16 @@ npm run build
 src/
 ├── components/          # Componentes React
 │   ├── Dashboard.tsx
-│   ├── POS.tsx
-│   ├── Returns.tsx
 │   ├── Inventory.tsx
-│   ├── Kits.tsx
 │   ├── InventoryAdjustment.tsx
-│   ├── Promotions.tsx
-│   ├── SalesHistory.tsx
-│   ├── Settings.tsx
+│   ├── Kits.tsx
 │   ├── Layout.tsx
-│   └── LoginScreen.tsx
+│   ├── LoginScreen.tsx
+│   ├── POS.tsx
+│   ├── Promotions.tsx
+│   ├── Returns.tsx
+│   ├── SalesHistory.tsx
+│   └── Settings.tsx
 ├── data/               # Datos iniciales
 │   ├── products.ts
 │   └── users.ts
@@ -126,140 +109,112 @@ src/
 └── App.tsx             # Componente principal
 ```
 
-## Funcionalidades principales
+## Atajos de teclado
 
-### Punto de Venta (POS)
+### Punto de Venta
+- `F2`: Buscar producto
+- `F3`: Escanear código de barras
+- `F5`: Cobrar
+- `F6`: Limpiar carrito
+- `F7`: Imprimir último ticket
+- `F12`: Nueva venta
+- `+`: Aumentar cantidad del item seleccionado
+- `-`: Disminuir cantidad del item seleccionado
+- `Delete`: Eliminar item seleccionado
+- `Alt+1`: Pago en efectivo
+- `Alt+2`: Pago con tarjeta
+- `Alt+3`: Pago con transferencia
+- `Enter`: Confirmar pago
 
-- Búsqueda por nombre o código de barras
-- Venta por unidad o caja
-- Kits de productos
-- Modo consumo propio (requiere autorización de admin)
-- Métodos de pago: Efectivo, Tarjeta, Transferencia
-- Cálculo automático de cambio
-- Impresión de tickets (58mm)
+## Estructura de datos
 
-### Atajos de teclado
-
-- **F2**: Buscar producto
-- **F3**: Escanear código de barras
-- **F5**: Cobrar
-- **F6**: Limpiar carrito
-- **F7**: Imprimir ticket
-- **F12**: Nueva venta
-- **+/-**: Aumentar/disminuir cantidad
-- **Delete**: Eliminar item
-- **Alt+1**: Efectivo
-- **Alt+2**: Tarjeta
-- **Alt+3**: Transferencia
-
-### Inventario
-
-- Agregar/editar/eliminar productos
-- Control de stock mínimo
-- Alertas de stock bajo
-- Edición rápida de stock
-
-### Kits
-
-- Crear kits combinando productos
-- Precio de venta y costo
-- Control de stock independiente
-- Activar/desactivar kits
-
-### Devoluciones
-
-- Buscar tickets por número o cajero
-- Seleccionar productos/kits a devolver
-- Cálculo automático de reembolso
-- Reintegro automático de stock
-
-### Promociones
-
-- Descuentos porcentuales
-- Descuentos fijos
-- Activar/desactivar promociones
-
-## Firebase Collections
-
-### products
-```javascript
+### Product
+```typescript
 {
-  id: string,
-  barcode: string,
-  barcodeCase?: string,
-  name: string,
-  icon: string,
-  cost: number,
-  unitPrice: number,
-  casePrice: number,
-  caseQty: number,
-  ownConsumptionPrice: number,
-  stock: number,
-  minStock: number
+  id: string;
+  barcode: string;
+  barcodeCase?: string;
+  name: string;
+  icon: string;
+  cost: number;
+  unitPrice: number;
+  casePrice: number;
+  caseQty: number;
+  ownConsumptionPrice: number;
+  stock: number;
+  minStock: number;
 }
 ```
 
-### kits
-```javascript
+### Kit
+```typescript
 {
-  id: string,
-  name: string,
-  icon: string,
-  items: [{ productId: string, quantity: number }],
-  price: number,
-  cost: number,
-  stock: number,
-  minStock: number,
-  active: boolean
+  id: string;
+  name: string;
+  icon: string;
+  items: [{ productId: string; quantity: number }];
+  price: number;
+  cost: number;
+  stock: number;
+  minStock: number;
+  active: boolean;
 }
 ```
 
-### tickets
-```javascript
+### Ticket
+```typescript
 {
-  id: string,
-  items: [CartItem],
-  kits: [CartKitItem],
-  subtotal: number,
-  discount: number,
-  tax: number,
-  total: number,
-  paymentMethod: 'cash' | 'card' | 'transfer',
-  amountPaid: number,
-  change: number,
-  date: Timestamp,
-  ticketNumber: string,
-  cashier: string,
-  isOwnConsumption: boolean
-}
-```
-
-### users
-```javascript
-{
-  id: string,
-  username: string,
-  name: string,
-  role: 'admin' | 'cashier',
-  password: string,
-  active: boolean
+  id: string;
+  items: CartItem[];
+  kits: CartKitItem[];
+  subtotal: number;
+  discount: number;
+  tax: number;
+  total: number;
+  paymentMethod: 'cash' | 'card' | 'transfer';
+  amountPaid: number;
+  change: number;
+  date: Date;
+  ticketNumber: string;
+  cashier: string;
+  isOwnConsumption: boolean;
 }
 ```
 
 ## Tecnologías
 
-- **React 18** - Framework UI
-- **TypeScript** - Tipado estático
-- **Vite** - Build tool
-- **Tailwind CSS** - Estilos
-- **Firebase** - Backend en tiempo real
-- **Lucide React** - Iconos
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- Firebase Firestore
+- Lucide React (iconos)
 
-## Soporte
+## Desarrollo
 
-Para soporte o consultas, contacta al administrador del sistema.
+```bash
+# Instalar dependencias
+npm install
 
----
+# Ejecutar en modo desarrollo
+npm run dev
 
-**Versión**: 1.0.0  
-**Última actualización**: 2024
+# Compilar para producción
+npm run build
+
+# Vista previa de producción
+npm run preview
+```
+
+## Notas importantes
+
+- La aplicación funciona tanto con Firebase como sin él
+- Si Firebase no está disponible, se usa modo local
+- Los datos en modo local se pierden al recargar la página
+- Para producción, se recomienda configurar Firebase
+- Las credenciales de Firebase están en `src/firebase.ts`
+- Los tickets se imprimen en formato de 58mm
+
+## Licencia
+
+Este proyecto es privado y pertenece a Depósito San Juditas.

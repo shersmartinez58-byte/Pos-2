@@ -43,54 +43,96 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   
   // Firebase state
-  const [users, setUsers] = useState<User[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [users, setUsers] = useState<User[]>(defaultUsers);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
   const [kits, setKits] = useState<Kit[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [adjustments, setAdjustments] = useState<AdjustmentType[]>([]);
   const [businessName, setBusinessName] = useState('Depósito San Juditas');
   const [loading, setLoading] = useState(true);
+  const [firebaseError, setFirebaseError] = useState(false);
 
   // Subscribe to Firebase collections in real-time
   useEffect(() => {
-    const unsubscribeUsers = subscribeToUsers((usersData) => {
-      setUsers(usersData.length > 0 ? usersData : defaultUsers);
-      if (usersData.length === 0) {
-        // Initialize default users if empty
-        defaultUsers.forEach(user => addUser(user));
+    let mounted = true;
+    const timeoutId = setTimeout(() => {
+      if (mounted) {
+        setLoading(false);
+        setFirebaseError(true);
       }
-    });
+    }, 5000); // 5 second timeout
 
-    const unsubscribeProducts = subscribeToProducts((productsData) => {
-      setProducts(productsData.length > 0 ? productsData : initialProducts);
-      if (productsData.length === 0) {
-        // Initialize default products if empty
-        initialProducts.forEach(product => addProduct(product));
+    try {
+      const unsubscribeUsers = subscribeToUsers((usersData) => {
+        if (mounted) {
+          clearTimeout(timeoutId);
+          setUsers(usersData.length > 0 ? usersData : defaultUsers);
+          if (usersData.length === 0) {
+            // Initialize default users if empty
+            defaultUsers.forEach(user => addUser(user).catch(console.error));
+          }
+        }
+      });
+
+      const unsubscribeProducts = subscribeToProducts((productsData) => {
+        if (mounted) {
+          setProducts(productsData.length > 0 ? productsData : initialProducts);
+          if (productsData.length === 0) {
+            // Initialize default products if empty
+            initialProducts.forEach(product => addProduct(product).catch(console.error));
+          }
+        }
+      });
+
+      const unsubscribeKits = subscribeToKits((kitsData) => {
+        if (mounted) setKits(kitsData);
+      });
+      
+      const unsubscribeTickets = subscribeToTickets((ticketsData) => {
+        if (mounted) setTickets(ticketsData);
+      });
+      
+      const unsubscribePromotions = subscribeToPromotions((promotionsData) => {
+        if (mounted) setPromotions(promotionsData);
+      });
+      
+      const unsubscribeAdjustments = subscribeToAdjustments((adjustmentsData) => {
+        if (mounted) setAdjustments(adjustmentsData);
+      });
+
+      // Load settings
+      getSettings().then(settings => {
+        if (mounted) {
+          if (settings && settings.businessName) {
+            setBusinessName(settings.businessName as string);
+          }
+          setLoading(false);
+        }
+      }).catch(() => {
+        if (mounted) {
+          setLoading(false);
+          setFirebaseError(true);
+        }
+      });
+
+      return () => {
+        mounted = false;
+        clearTimeout(timeoutId);
+        unsubscribeUsers();
+        unsubscribeProducts();
+        unsubscribeKits();
+        unsubscribeTickets();
+        unsubscribePromotions();
+        unsubscribeAdjustments();
+      };
+    } catch (error) {
+      console.error('Firebase initialization error:', error);
+      if (mounted) {
+        setLoading(false);
+        setFirebaseError(true);
       }
-    });
-
-    const unsubscribeKits = subscribeToKits(setKits);
-    const unsubscribeTickets = subscribeToTickets(setTickets);
-    const unsubscribePromotions = subscribeToPromotions(setPromotions);
-    const unsubscribeAdjustments = subscribeToAdjustments(setAdjustments);
-
-    // Load settings
-    getSettings().then(settings => {
-      if (settings && settings.businessName) {
-        setBusinessName(settings.businessName as string);
-      }
-      setLoading(false);
-    });
-
-    return () => {
-      unsubscribeUsers();
-      unsubscribeProducts();
-      unsubscribeKits();
-      unsubscribeTickets();
-      unsubscribePromotions();
-      unsubscribeAdjustments();
-    };
+    }
   }, []);
 
   const adminUser = users.find(u => u.role === 'admin');
@@ -101,171 +143,297 @@ function App() {
 
   // Sale complete - save to Firebase and update stock
   const handleSaleComplete = useCallback(async (ticket: Omit<Ticket, 'id'>) => {
-    try {
-      // Save ticket to Firebase
-      await addTicket(ticket);
-
-      // Update product stock
-      for (const item of ticket.items) {
-        const product = products.find(p => p.id === item.product.id);
-        if (product) {
-          const soldQty = item.quantity * (item.isCase ? product.caseQty : 1);
-          const newStock = Math.max(0, product.stock - soldQty);
-          await updateProduct({ ...product, stock: newStock });
-        }
+    const ticketWithId = { ...ticket, id: Date.now().toString() };
+    
+    // Update local state immediately
+    setTickets(prev => [ticketWithId, ...prev]);
+    
+    // Update product stock locally
+    setProducts(prev => prev.map(p => {
+      const soldItems = ticket.items.filter(i => i.product.id === p.id);
+      if (soldItems.length > 0) {
+        const totalSold = soldItems.reduce((sum, item) => sum + (item.quantity * (item.isCase ? item.product.caseQty : 1)), 0);
+        return { ...p, stock: Math.max(0, p.stock - totalSold) };
       }
+      return p;
+    }));
 
-      // Update kits stock
-      if (ticket.kits) {
-        for (const kitItem of ticket.kits) {
-          const kit = kits.find(k => k.id === kitItem.kit.id);
-          if (kit) {
-            const newStock = Math.max(0, kit.stock - kitItem.quantity);
-            await updateKit({ ...kit, stock: newStock });
+    // Update kits stock locally
+    if (ticket.kits) {
+      setKits(prev => prev.map(k => {
+        const soldKit = ticket.kits?.find(ki => ki.kit.id === k.id);
+        if (soldKit) {
+          return { ...k, stock: Math.max(0, k.stock - soldKit.quantity) };
+        }
+        return k;
+      }));
+    }
+
+    // Try to save to Firebase (if available)
+    if (!firebaseError) {
+      try {
+        await addTicket(ticket);
+        for (const item of ticket.items) {
+          const product = products.find(p => p.id === item.product.id);
+          if (product) {
+            const soldQty = item.quantity * (item.isCase ? product.caseQty : 1);
+            const newStock = Math.max(0, product.stock - soldQty);
+            await updateProduct({ ...product, stock: newStock });
           }
         }
+        if (ticket.kits) {
+          for (const kitItem of ticket.kits) {
+            const kit = kits.find(k => k.id === kitItem.kit.id);
+            if (kit) {
+              const newStock = Math.max(0, kit.stock - kitItem.quantity);
+              await updateKit({ ...kit, stock: newStock });
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error saving to Firebase:', error);
       }
-    } catch (error) {
-      console.error('Error completing sale:', error);
     }
-  }, [products, kits]);
+  }, [products, kits, firebaseError]);
 
   // Product operations
   const handleUpdateStock = useCallback(async (productId: string, newStock: number) => {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      await updateProduct({ ...product, stock: newStock });
+    setProducts(prev => prev.map(p => p.id === productId ? { ...p, stock: newStock } : p));
+    if (!firebaseError) {
+      try {
+        const product = products.find(p => p.id === productId);
+        if (product) {
+          await updateProduct({ ...product, stock: newStock });
+        }
+      } catch (error) {
+        console.error('Error updating stock:', error);
+      }
     }
-  }, [products]);
+  }, [products, firebaseError]);
 
   const handleAddProduct = useCallback(async (product: Omit<Product, 'id'>) => {
-    await addProduct(product);
-  }, []);
+    const newProduct = { ...product, id: Date.now().toString() };
+    setProducts(prev => [...prev, newProduct]);
+    if (!firebaseError) {
+      try {
+        await addProduct(product);
+      } catch (error) {
+        console.error('Error adding product:', error);
+      }
+    }
+  }, [firebaseError]);
 
   const handleDeleteProduct = useCallback(async (productId: string) => {
-    await deleteProduct(productId);
-  }, []);
+    setProducts(prev => prev.filter(p => p.id !== productId));
+    if (!firebaseError) {
+      try {
+        await deleteProduct(productId);
+      } catch (error) {
+        console.error('Error deleting product:', error);
+      }
+    }
+  }, [firebaseError]);
 
   const handleUpdateProduct = useCallback(async (product: Product) => {
-    await updateProduct(product);
-  }, []);
+    setProducts(prev => prev.map(p => p.id === product.id ? product : p));
+    if (!firebaseError) {
+      try {
+        await updateProduct(product);
+      } catch (error) {
+        console.error('Error updating product:', error);
+      }
+    }
+  }, [firebaseError]);
 
   // Kit operations
   const handleAddKit = useCallback(async (kit: Omit<Kit, 'id'>) => {
-    await addKit(kit);
-  }, []);
+    const newKit = { ...kit, id: Date.now().toString() };
+    setKits(prev => [...prev, newKit]);
+    if (!firebaseError) {
+      try {
+        await addKit(kit);
+      } catch (error) {
+        console.error('Error adding kit:', error);
+      }
+    }
+  }, [firebaseError]);
 
   const handleUpdateKit = useCallback(async (kit: Kit) => {
-    await updateKit(kit);
-  }, []);
+    setKits(prev => prev.map(k => k.id === kit.id ? kit : k));
+    if (!firebaseError) {
+      try {
+        await updateKit(kit);
+      } catch (error) {
+        console.error('Error updating kit:', error);
+      }
+    }
+  }, [firebaseError]);
 
   const handleDeleteKit = useCallback(async (kitId: string) => {
-    await deleteKit(kitId);
-  }, []);
+    setKits(prev => prev.filter(k => k.id !== kitId));
+    if (!firebaseError) {
+      try {
+        await deleteKit(kitId);
+      } catch (error) {
+        console.error('Error deleting kit:', error);
+      }
+    }
+  }, [firebaseError]);
 
   // Return operation
   const handleReturn = useCallback(async (ticketId: string, returnedItems: CartItem[], returnedKits: CartKitItem[]) => {
-    try {
-      // Reintegrate product stock
-      for (const item of returnedItems) {
-        const product = products.find(p => p.id === item.product.id);
-        if (product) {
-          const qty = item.isCase ? item.quantity * product.caseQty : item.quantity;
-          await updateProduct({ ...product, stock: product.stock + qty });
-        }
+    // Reintegrate product stock locally
+    setProducts(prev => prev.map(p => {
+      const returnedItem = returnedItems.find(i => i.product.id === p.id);
+      if (returnedItem) {
+        const qty = returnedItem.isCase ? returnedItem.quantity * p.caseQty : returnedItem.quantity;
+        return { ...p, stock: p.stock + qty };
       }
+      return p;
+    }));
 
-      // Reintegrate kits stock
-      for (const kitItem of returnedKits) {
-        const kit = kits.find(k => k.id === kitItem.kit.id);
-        if (kit) {
-          await updateKit({ ...kit, stock: kit.stock + kitItem.quantity });
-        }
+    // Reintegrate kits stock locally
+    setKits(prev => prev.map(k => {
+      const returnedKit = returnedKits.find(rk => rk.kit.id === k.id);
+      if (returnedKit) {
+        return { ...k, stock: k.stock + returnedKit.quantity };
       }
+      return k;
+    }));
 
-      // Add adjustment record
-      await addAdjustment({
-        productId: 'return',
-        productName: 'Devolución',
-        type: 'add',
-        quantity: returnedItems.length + returnedKits.length,
-        reason: `Devolución ticket #${ticketId}`,
-        user: currentUser?.name || 'Sistema',
-        date: new Date(),
-      });
-    } catch (error) {
-      console.error('Error processing return:', error);
+    // Add adjustment record locally
+    const adjustment: AdjustmentType = {
+      id: Date.now().toString(),
+      productId: 'return',
+      productName: 'Devolución',
+      type: 'add',
+      quantity: returnedItems.length + returnedKits.length,
+      reason: `Devolución ticket #${ticketId}`,
+      date: new Date(),
+      user: currentUser?.name || 'Sistema',
+    };
+    setAdjustments(prev => [adjustment, ...prev]);
+
+    // Try to save to Firebase
+    if (!firebaseError) {
+      try {
+        for (const item of returnedItems) {
+          const product = products.find(p => p.id === item.product.id);
+          if (product) {
+            const qty = item.isCase ? item.quantity * product.caseQty : item.quantity;
+            await updateProduct({ ...product, stock: product.stock + qty });
+          }
+        }
+        for (const kitItem of returnedKits) {
+          const kit = kits.find(k => k.id === kitItem.kit.id);
+          if (kit) {
+            await updateKit({ ...kit, stock: kit.stock + kitItem.quantity });
+          }
+        }
+        await addAdjustment(adjustment);
+      } catch (error) {
+        console.error('Error saving return to Firebase:', error);
+      }
     }
-  }, [products, kits, currentUser]);
+  }, [products, kits, currentUser, firebaseError]);
 
   // Inventory adjustment
   const handleInventoryAdjust = useCallback(async (adjustment: Omit<AdjustmentType, 'id' | 'date'>) => {
-    try {
-      await addAdjustment({ ...adjustment, date: new Date() });
-
-      const product = products.find(p => p.id === adjustment.productId);
-      if (product) {
-        let newStock = product.stock;
-        if (adjustment.type === 'add') newStock += adjustment.quantity;
-        else if (adjustment.type === 'remove') newStock = Math.max(0, newStock - adjustment.quantity);
-        else if (adjustment.type === 'correction') newStock = adjustment.quantity;
-        
-        await updateProduct({ ...product, stock: newStock });
-      }
-    } catch (error) {
-      console.error('Error adjusting inventory:', error);
+    const newAdjustment: AdjustmentType = {
+      ...adjustment,
+      id: Date.now().toString(),
+      date: new Date(),
+    };
+    
+    // Update locally
+    setAdjustments(prev => [newAdjustment, ...prev]);
+    
+    const product = products.find(p => p.id === adjustment.productId);
+    let newStock = product?.stock || 0;
+    
+    if (product) {
+      if (adjustment.type === 'add') newStock += adjustment.quantity;
+      else if (adjustment.type === 'remove') newStock = Math.max(0, newStock - adjustment.quantity);
+      else if (adjustment.type === 'correction') newStock = adjustment.quantity;
+      
+      setProducts(prev => prev.map(p => p.id === adjustment.productId ? { ...p, stock: newStock } : p));
     }
-  }, [products]);
+
+    // Try to save to Firebase
+    if (!firebaseError) {
+      try {
+        await addAdjustment(newAdjustment);
+        if (product) {
+          await updateProduct({ ...product, stock: newStock });
+        }
+      } catch (error) {
+        console.error('Error saving adjustment to Firebase:', error);
+      }
+    }
+  }, [products, firebaseError]);
 
   // Promotion operations
   const handleAddPromotion = useCallback(async (promotion: Omit<Promotion, 'id'>) => {
-    await addPromotion(promotion);
-  }, []);
+    const newPromotion = { ...promotion, id: Date.now().toString() };
+    setPromotions(prev => [...prev, newPromotion]);
+    if (!firebaseError) {
+      try {
+        await addPromotion(promotion);
+      } catch (error) {
+        console.error('Error adding promotion:', error);
+      }
+    }
+  }, [firebaseError]);
 
   const handleTogglePromotion = useCallback(async (id: string) => {
-    const promotion = promotions.find(p => p.id === id);
-    if (promotion) {
-      await updatePromotion({ ...promotion, active: !promotion.active });
+    setPromotions(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p));
+    if (!firebaseError) {
+      try {
+        const promotion = promotions.find(p => p.id === id);
+        if (promotion) {
+          await updatePromotion({ ...promotion, active: !promotion.active });
+        }
+      } catch (error) {
+        console.error('Error toggling promotion:', error);
+      }
     }
-  }, [promotions]);
+  }, [promotions, firebaseError]);
 
   const handleDeletePromotion = useCallback(async (id: string) => {
-    await deletePromotion(id);
-  }, []);
-
-  // User operations
-  const handleAddUser = useCallback(async (user: Omit<User, 'id'>) => {
-    await addUser(user);
-  }, []);
-
-  const handleUpdateUser = useCallback(async (user: User) => {
-    await updateUser(user);
-  }, []);
-
-  const handleDeleteUser = useCallback(async (userId: string) => {
-    await deleteUser(userId);
-  }, []);
-
-  const handleToggleUser = useCallback(async (id: string) => {
-    const user = users.find(u => u.id === id);
-    if (user) {
-      await updateUser({ ...user, active: !user.active });
+    setPromotions(prev => prev.filter(p => p.id !== id));
+    if (!firebaseError) {
+      try {
+        await deletePromotion(id);
+      } catch (error) {
+        console.error('Error deleting promotion:', error);
+      }
     }
-  }, [users]);
+  }, [firebaseError]);
 
   // Settings
   const handleUpdateBusinessName = useCallback(async (name: string) => {
     setBusinessName(name);
-    await saveSettings({ businessName: name });
-  }, []);
+    if (!firebaseError) {
+      try {
+        await saveSettings({ businessName: name });
+      } catch (error) {
+        console.error('Error saving settings:', error);
+      }
+    }
+  }, [firebaseError]);
 
   const handleUpdateUsers = useCallback(async (newUsers: User[]) => {
-    // This is called from Settings component when users are modified
-    // We need to sync with Firebase
-    for (const user of newUsers) {
-      await updateUser(user);
+    setUsers(newUsers);
+    if (!firebaseError) {
+      try {
+        for (const user of newUsers) {
+          await updateUser(user);
+        }
+      } catch (error) {
+        console.error('Error updating users:', error);
+      }
     }
-  }, []);
+  }, [firebaseError]);
 
   // Print ticket
   const handlePrintTicket = useCallback((ticket: Ticket) => {
@@ -289,9 +457,14 @@ function App() {
             <span className="text-3xl">🏪</span>
           </div>
           <p className="text-slate-600">Cargando sistema...</p>
+          <p className="text-xs text-slate-400 mt-2">Conectando con Firebase</p>
         </div>
       </div>
     );
+  }
+
+  if (firebaseError) {
+    console.warn('Firebase no disponible, usando modo local');
   }
 
   if (!currentUser) {
