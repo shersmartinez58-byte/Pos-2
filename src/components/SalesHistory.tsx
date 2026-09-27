@@ -140,12 +140,18 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({ tickets, onPrint }) 
               {selectedTicket.items.map((item, i) => {
                 const price = item.isCase ? item.product.casePrice : item.product.unitPrice;
                 return (
-                  <div key={i} className="flex justify-between">
+                  <div key={`i-${i}`} className="flex justify-between">
                     <span className="truncate pr-2">{item.product.name}{item.isCase ? ' (Caja)' : ''}</span>
                     <span>{item.quantity}x${price.toFixed(2)}</span>
                   </div>
                 );
               })}
+              {selectedTicket.kits && selectedTicket.kits.map((item, i) => (
+                <div key={`k-${i}`} className="flex justify-between text-purple-700">
+                  <span className="truncate pr-2">[KIT] {item.kit.name}</span>
+                  <span>{item.quantity}x${item.kit.price.toFixed(2)}</span>
+                </div>
+              ))}
               <div className="border-t border-dashed pt-2 space-y-0.5">
                 <div className="flex justify-between"><span>Subtotal:</span><span>${selectedTicket.subtotal.toFixed(2)}</span></div>
                 {selectedTicket.discount > 0 && <div className="flex justify-between text-green-600"><span>Descuento:</span><span>-${selectedTicket.discount.toFixed(2)}</span></div>}

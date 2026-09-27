@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import { Product, CartItem, Ticket } from '../types';
+import { Product, CartItem, Ticket, Kit } from '../types';
 import { Search, Trash2, Plus, Minus, ShoppingCart, CreditCard, Printer, X, Banknote, Building2, Lock, Package, User } from 'lucide-react';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 
 interface POSProps {
   products: Product[];
+  kits: Kit[];
   cashierName: string;
   userRole: 'admin' | 'cashier';
   adminPassword: string;
@@ -12,10 +13,12 @@ interface POSProps {
   tickets: Ticket[];
 }
 
-export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, adminPassword, onSaleComplete, tickets }) => {
+export const POS: React.FC<POSProps> = ({ products, kits, cashierName, userRole, adminPassword, onSaleComplete, tickets }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartKits, setCartKits] = useState<{ kit: Kit; quantity: number; isOwnConsumption: boolean }[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCartIndex, setSelectedCartIndex] = useState(-1);
+  const [activeTab, setActiveTab] = useState<'products' | 'kits'>('products');
   const [showPayment, setShowPayment] = useState(false);
   const [showTicket, setShowTicket] = useState(false);
   const [showAdminAuth, setShowAdminAuth] = useState(false);
@@ -34,7 +37,16 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
     return isCase ? product.casePrice : product.unitPrice;
   }, []);
 
-  const subtotal = useMemo(() => cart.reduce((sum, item) => sum + getItemPrice(item.product, item.isCase, item.isOwnConsumption) * item.quantity, 0), [cart, getItemPrice]);
+  const getKitPrice = useCallback((kit: Kit, ownConsumption: boolean) => {
+    if (ownConsumption) return kit.cost;
+    return kit.price;
+  }, []);
+
+  const subtotal = useMemo(() => {
+    const productsTotal = cart.reduce((sum, item) => sum + getItemPrice(item.product, item.isCase, item.isOwnConsumption) * item.quantity, 0);
+    const kitsTotal = cartKits.reduce((sum, item) => sum + getKitPrice(item.kit, item.isOwnConsumption) * item.quantity, 0);
+    return productsTotal + kitsTotal;
+  }, [cart, cartKits, getItemPrice, getKitPrice]);
   const tax = useMemo(() => subtotal * 0.16, [subtotal]);
   const total = useMemo(() => subtotal + tax, [subtotal, tax]);
 
@@ -55,6 +67,19 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
     });
     const unit = isCase ? `Caja (${product.caseQty})` : 'Unidad';
     showNotif(`✓ ${product.name} (${unit})`);
+  }, [showNotif, isOwnConsumption]);
+
+  const addKitToCart = useCallback((kit: Kit) => {
+    setCartKits(prev => {
+      const existing = prev.findIndex(item => item.kit.id === kit.id);
+      if (existing >= 0) {
+        const updated = [...prev];
+        updated[existing] = { ...updated[existing], quantity: updated[existing].quantity + 1 };
+        return updated;
+      }
+      return [...prev, { kit, quantity: 1, isOwnConsumption }];
+    });
+    showNotif(`✓ Kit: ${kit.name}`);
   }, [showNotif, isOwnConsumption]);
 
   // Unified search/barcode
@@ -122,6 +147,7 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
 
   const clearCart = useCallback(() => {
     setCart([]);
+    setCartKits([]);
     setSelectedCartIndex(-1);
     setIsOwnConsumption(false);
     showNotif('Carrito limpiado');
@@ -141,6 +167,7 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
     const ticket: Ticket = {
       id: Date.now().toString(),
       items: [...cart],
+      kits: [...cartKits],
       subtotal, discount: 0, tax, total,
       paymentMethod, amountPaid: paid,
       change: paymentMethod === 'cash' ? paid - total : 0,
@@ -154,6 +181,7 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
     setShowPayment(false);
     setShowTicket(true);
     setCart([]);
+    setCartKits([]);
     setSelectedCartIndex(-1);
     setIsOwnConsumption(false);
   }, [cart, subtotal, tax, total, paymentMethod, amountPaid, cashierName, onSaleComplete, isOwnConsumption]);
@@ -184,9 +212,11 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
     if (!t) return;
     const w = window.open('', '_blank');
     if (!w) return;
-    w.document.write(`<!DOCTYPE html><html><head><title>Ticket</title><style>body{font-family:monospace;font-size:11px;width:200px;margin:0 auto;padding:5px}.c{text-align:center}.b{font-weight:bold}.l{border-top:1px dashed #000;margin:3px 0}.r{display:flex;justify-content:space-between;font-size:10px}</style></head><body><div class="c"><p class="b" style="font-size:14px">DEPÓSITO SAN JUDITAS</p><p>Ticket #${t.ticketNumber}</p><p>${t.date.toLocaleString('es-MX')}</p><p>Cajero: ${t.cashier}</p>${t.isOwnConsumption ? '<p class="b">CONSUMO PROPIO</p>' : ''}</div><div class="l"></div>${t.items.map(i => `<div class="r"><span>${i.product.name}${i.isCase ? ' (Caja)' : ''}</span><span>${i.quantity}x$${getItemPrice(i.product, i.isCase, i.isOwnConsumption).toFixed(2)}</span></div>`).join('')}<div class="l"></div><div class="r"><span>Subtotal:</span><span>$${t.subtotal.toFixed(2)}</span></div><div class="r"><span>IVA:</span><span>$${t.tax.toFixed(2)}</span></div><div class="l"></div><div class="r b"><span>TOTAL:</span><span>$${t.total.toFixed(2)}</span></div><div class="r"><span>Pago:</span><span>$${t.amountPaid.toFixed(2)}</span></div>${t.paymentMethod === 'cash' ? `<div class="r b"><span>Cambio:</span><span>$${t.change.toFixed(2)}</span></div>` : ''}<div class="l"></div><div class="c"><p class="b">¡GRACIAS!</p></div><script>print();close();</script></body></html>`);
+    const itemsHtml = t.items.map(i => `<div class="r"><span>${i.product.name}${i.isCase ? ' (Caja)' : ''}</span><span>${i.quantity}x$${getItemPrice(i.product, i.isCase, i.isOwnConsumption).toFixed(2)}</span></div>`).join('');
+    const kitsHtml = t.kits ? t.kits.map(k => `<div class="r"><span>[KIT] ${k.kit.name}</span><span>${k.quantity}x$${getKitPrice(k.kit, k.isOwnConsumption).toFixed(2)}</span></div>`).join('') : '';
+    w.document.write(`<!DOCTYPE html><html><head><title>Ticket</title><style>body{font-family:monospace;font-size:11px;width:200px;margin:0 auto;padding:5px}.c{text-align:center}.b{font-weight:bold}.l{border-top:1px dashed #000;margin:3px 0}.r{display:flex;justify-content:space-between;font-size:10px}</style></head><body><div class="c"><p class="b" style="font-size:14px">DEPÓSITO SAN JUDITAS</p><p>Ticket #${t.ticketNumber}</p><p>${t.date.toLocaleString('es-MX')}</p><p>Cajero: ${t.cashier}</p>${t.isOwnConsumption ? '<p class="b">CONSUMO PROPIO</p>' : ''}</div><div class="l"></div>${itemsHtml}${kitsHtml}<div class="l"></div><div class="r"><span>Subtotal:</span><span>$${t.subtotal.toFixed(2)}</span></div><div class="r"><span>IVA:</span><span>$${t.tax.toFixed(2)}</span></div><div class="l"></div><div class="r b"><span>TOTAL:</span><span>$${t.total.toFixed(2)}</span></div><div class="r"><span>Pago:</span><span>$${t.amountPaid.toFixed(2)}</span></div>${t.paymentMethod === 'cash' ? `<div class="r b"><span>Cambio:</span><span>$${t.change.toFixed(2)}</span></div>` : ''}<div class="l"></div><div class="c"><p class="b">¡GRACIAS!</p></div><script>print();close();</script></body></html>`);
     w.document.close();
-  }, [lastTicket, getItemPrice]);
+  }, [lastTicket, getItemPrice, getKitPrice]);
 
   useKeyboardShortcuts([
     { key: 'f2', action: () => searchRef.current?.focus() },
@@ -207,6 +237,10 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
     !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.barcode.includes(searchTerm) || (p.barcodeCase && p.barcodeCase.includes(searchTerm))
   );
 
+  const filteredKits = kits.filter(k =>
+    k.active && (!searchTerm || k.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
   const change = Math.max(0, parseFloat(amountPaid || '0') - total);
   const quickAmounts = [Math.ceil(total), Math.ceil(total / 50) * 50, Math.ceil(total / 100) * 100, Math.ceil(total / 500) * 500].filter((v, i, a) => a.indexOf(v) === i && v >= total).slice(0, 4);
 
@@ -216,13 +250,28 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
       <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200">
         {/* Search */}
         <div className="p-3 bg-white border-b border-slate-200 space-y-2">
+          {/* Tabs */}
+          <div className="flex gap-1">
+            <button
+              onClick={() => setActiveTab('products')}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'products' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'}`}
+            >
+              Productos
+            </button>
+            <button
+              onClick={() => setActiveTab('kits')}
+              className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'kits' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'}`}
+            >
+              Kits ({kits.filter(k => k.active).length})
+            </button>
+          </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               ref={searchRef}
               id="search-input"
               type="text"
-              placeholder="Buscar producto o escanear código..."
+              placeholder={activeTab === 'products' ? "Buscar producto o escanear código..." : "Buscar kit..."}
               value={searchTerm}
               onChange={e => handleSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
@@ -248,34 +297,69 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
 
         {/* Product Grid */}
         <div className="flex-1 overflow-y-auto p-3">
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
-            {filteredProducts.map(product => (
-              <div key={product.id} className="bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-md transition-all group">
-                <div className="p-2 text-center">
-                  <p className="text-[11px] font-medium text-slate-800 truncate leading-tight">{product.name}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Stock: {product.stock}</p>
-                </div>
-                <div className="border-t border-slate-100 grid grid-cols-2">
-                  <button
-                    onClick={() => addToCart(product, false)}
-                    className={`py-1.5 text-[10px] font-medium transition-colors ${!defaultIsCase ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
-                  >
-                    <div>Unidad</div>
-                    <div className="font-bold">${product.unitPrice.toFixed(2)}</div>
-                  </button>
-                  {product.caseQty > 1 && (
+          {activeTab === 'products' ? (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+              {filteredProducts.map(product => (
+                <div key={product.id} className="bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-md transition-all group">
+                  <div className="p-2 text-center">
+                    <p className="text-[11px] font-medium text-slate-800 truncate leading-tight">{product.name}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">Stock: {product.stock}</p>
+                  </div>
+                  <div className="border-t border-slate-100 grid grid-cols-2">
                     <button
-                      onClick={() => addToCart(product, true)}
-                      className={`py-1.5 text-[10px] font-medium transition-colors border-l border-slate-100 ${defaultIsCase ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
+                      onClick={() => addToCart(product, false)}
+                      className={`py-1.5 text-[10px] font-medium transition-colors ${!defaultIsCase ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
                     >
-                      <div>Caja ({product.caseQty})</div>
-                      <div className="font-bold">${product.casePrice.toFixed(2)}</div>
+                      <div>Unidad</div>
+                      <div className="font-bold">${product.unitPrice.toFixed(2)}</div>
                     </button>
-                  )}
+                    {product.caseQty > 1 && (
+                      <button
+                        onClick={() => addToCart(product, true)}
+                        className={`py-1.5 text-[10px] font-medium transition-colors border-l border-slate-100 ${defaultIsCase ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
+                      >
+                        <div>Caja ({product.caseQty})</div>
+                        <div className="font-bold">${product.casePrice.toFixed(2)}</div>
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+              {filteredKits.map(kit => (
+                <button
+                  key={kit.id}
+                  onClick={() => addKitToCart(kit)}
+                  className="bg-white border border-slate-200 rounded-lg p-3 hover:shadow-md transition-all text-left"
+                >
+                  <p className="text-xs font-medium text-slate-800 truncate">{kit.name}</p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Stock: {kit.stock}</p>
+                  <p className="text-sm font-bold text-slate-900 mt-1">${kit.price.toFixed(2)}</p>
+                  <div className="flex flex-wrap gap-0.5 mt-1">
+                    {kit.items.slice(0, 3).map((item, i) => {
+                      const product = products.find(p => p.id === item.productId);
+                      return (
+                        <span key={i} className="text-[9px] bg-slate-100 px-1 py-0.5 rounded text-slate-500">
+                          {product?.name?.substring(0, 10) || '?'} x{item.quantity}
+                        </span>
+                      );
+                    })}
+                    {kit.items.length > 3 && (
+                      <span className="text-[9px] text-slate-400">+{kit.items.length - 3}</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+              {filteredKits.length === 0 && (
+                <div className="col-span-full text-center py-8 text-slate-400">
+                  <Package className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                  <p className="text-xs">No hay kits disponibles</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -313,16 +397,17 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {cart.length === 0 ? (
+          {cart.length === 0 && cartKits.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-slate-400 p-4">
               <ShoppingCart className="w-12 h-12 mb-2 opacity-20" />
               <p className="text-xs">Carrito vacío</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
+              {/* Products */}
               {cart.map((item, index) => (
                 <div
-                  key={`${item.product.id}-${item.isCase}`}
+                  key={`p-${item.product.id}-${item.isCase}`}
                   onClick={() => setSelectedCartIndex(index)}
                   className={`p-2.5 cursor-pointer transition-colors ${selectedCartIndex === index ? 'bg-slate-50' : 'hover:bg-slate-50'}`}
                 >
@@ -350,6 +435,40 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
                   <div className="text-right mt-1">
                     <span className="text-xs font-bold text-slate-900">
                       ${(getItemPrice(item.product, item.isCase, item.isOwnConsumption) * item.quantity).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {/* Kits */}
+              {cartKits.map((item, index) => (
+                <div
+                  key={`k-${item.kit.id}`}
+                  className="p-2.5 bg-purple-50"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-purple-800 truncate">Kit: {item.kit.name}</p>
+                      <p className="text-[10px] text-purple-600">
+                        ${getKitPrice(item.kit, item.isOwnConsumption).toFixed(2)}
+                        {item.isOwnConsumption && <span className="ml-1 font-medium">(Consumo)</span>}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => setCartKits(prev => { const u = [...prev]; u[index] = { ...u[index], quantity: u[index].quantity - 1 }; return u.filter(i => i.quantity > 0); })} className="w-5 h-5 flex items-center justify-center rounded bg-purple-100 hover:bg-purple-200">
+                        <Minus className="w-2.5 h-2.5" />
+                      </button>
+                      <span className="w-5 text-center text-xs font-semibold">{item.quantity}</span>
+                      <button onClick={() => setCartKits(prev => { const u = [...prev]; u[index] = { ...u[index], quantity: u[index].quantity + 1 }; return u; })} className="w-5 h-5 flex items-center justify-center rounded bg-purple-100 hover:bg-purple-200">
+                        <Plus className="w-2.5 h-2.5" />
+                      </button>
+                      <button onClick={() => setCartKits(prev => prev.filter((_, i) => i !== index))} className="w-5 h-5 flex items-center justify-center rounded text-red-400 hover:bg-red-50 ml-0.5">
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="text-right mt-1">
+                    <span className="text-xs font-bold text-purple-900">
+                      ${(getKitPrice(item.kit, item.isOwnConsumption) * item.quantity).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -491,9 +610,15 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
                   {lastTicket.isOwnConsumption && <p className="font-bold text-amber-600 mt-1">🏠 CONSUMO PROPIO</p>}
                 </div>
                 {lastTicket.items.map((item, i) => (
-                  <div key={i} className="flex justify-between py-0.5">
+                  <div key={`i-${i}`} className="flex justify-between py-0.5">
                     <span className="truncate pr-1">{item.product.name}{item.isCase ? ' (Caja)' : ''}</span>
                     <span>{item.quantity}x${getItemPrice(item.product, item.isCase, item.isOwnConsumption).toFixed(2)}</span>
+                  </div>
+                ))}
+                {lastTicket.kits && lastTicket.kits.map((item, i) => (
+                  <div key={`k-${i}`} className="flex justify-between py-0.5 text-purple-700">
+                    <span className="truncate pr-1">[KIT] {item.kit.name}</span>
+                    <span>{item.quantity}x${getKitPrice(item.kit, item.isOwnConsumption).toFixed(2)}</span>
                   </div>
                 ))}
                 <div className="border-t border-dashed border-slate-300 pt-1 mt-1 space-y-0.5">

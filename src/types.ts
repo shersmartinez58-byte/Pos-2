@@ -3,26 +3,50 @@ export interface Product {
   barcode: string;
   barcodeCase?: string;
   name: string;
-  icon: string; // emoji
+  icon: string;
   cost: number;
   unitPrice: number;
   casePrice: number;
-  caseQty: number; // cuántas unidades trae la caja
+  caseQty: number;
   ownConsumptionPrice: number;
   stock: number;
   minStock: number;
 }
 
+export interface KitItem {
+  productId: string;
+  quantity: number;
+}
+
+export interface Kit {
+  id: string;
+  name: string;
+  icon: string;
+  items: KitItem[];
+  price: number;
+  cost: number;
+  stock: number;
+  minStock: number;
+  active: boolean;
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;
-  isCase: boolean; // true = por caja, false = por unidad
+  isCase: boolean;
+  isOwnConsumption: boolean;
+}
+
+export interface CartKitItem {
+  kit: Kit;
+  quantity: number;
   isOwnConsumption: boolean;
 }
 
 export interface Ticket {
   id: string;
   items: CartItem[];
+  kits: CartKitItem[];
   subtotal: number;
   discount: number;
   tax: number;
@@ -66,4 +90,4 @@ export interface InventoryAdjustment {
   user: string;
 }
 
-export type Page = 'dashboard' | 'pos' | 'inventory' | 'adjustment' | 'promotions' | 'history' | 'settings';
+export type Page = 'dashboard' | 'pos' | 'inventory' | 'kits' | 'adjustment' | 'promotions' | 'history' | 'settings';

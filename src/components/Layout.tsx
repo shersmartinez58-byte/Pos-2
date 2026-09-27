@@ -17,6 +17,7 @@ const navItems: { page: Page; label: string; icon: React.ReactNode; adminOnly?: 
   { page: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
   { page: 'pos', label: 'Punto de Venta', icon: <ShoppingCart className="w-5 h-5" /> },
   { page: 'inventory', label: 'Inventario', icon: <Package className="w-5 h-5" /> },
+  { page: 'kits', label: 'Kits', icon: <Package className="w-5 h-5" /> },
   { page: 'adjustment', label: 'Ajuste Inventario', icon: <RefreshCw className="w-5 h-5" /> },
   { page: 'promotions', label: 'Promociones', icon: <Tag className="w-5 h-5" /> },
   { page: 'history', label: 'Historial Ventas', icon: <History className="w-5 h-5" /> },

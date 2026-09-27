@@ -29,6 +29,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ tickets, products }) => {
       productSales[key].qty += item.quantity;
       productSales[key].total += price * item.quantity;
     });
+    // Include kits
+    if (t.kits) {
+      t.kits.forEach(item => {
+        const key = `kit-${item.kit.id}`;
+        if (!productSales[key]) productSales[key] = { name: `[KIT] ${item.kit.name}`, qty: 0, total: 0 };
+        productSales[key].qty += item.quantity;
+        productSales[key].total += item.kit.price * item.quantity;
+      });
+    }
   });
   const topProducts = Object.values(productSales).sort((a, b) => b.qty - a.qty).slice(0, 5);
 

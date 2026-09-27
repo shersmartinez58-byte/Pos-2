@@ -7,16 +7,19 @@ import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
 import { POS } from './components/POS';
 import { Inventory } from './components/Inventory';
+import { Kits } from './components/Kits';
 import { InventoryAdjustment } from './components/InventoryAdjustment';
 import { Promotions } from './components/Promotions';
 import { SalesHistory } from './components/SalesHistory';
 import { Settings } from './components/Settings';
+import { Kit } from './types';
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>(defaultUsers);
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [kits, setKits] = useState<Kit[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [adjustments, setAdjustments] = useState<AdjustmentType[]>([]);
@@ -38,6 +41,14 @@ function App() {
       }
       return p;
     }));
+    // Update kits stock
+    setKits(prev => prev.map(k => {
+      const soldKit = ticket.kits?.find(ki => ki.kit.id === k.id);
+      if (soldKit) {
+        return { ...k, stock: Math.max(0, k.stock - soldKit.quantity) };
+      }
+      return k;
+    }));
   }, []);
 
   const handleUpdateStock = useCallback((productId: string, newStock: number) => {
@@ -50,6 +61,18 @@ function App() {
 
   const handleDeleteProduct = useCallback((productId: string) => {
     setProducts(prev => prev.filter(p => p.id !== productId));
+  }, []);
+
+  const handleAddKit = useCallback((kit: Omit<Kit, 'id'>) => {
+    setKits(prev => [...prev, { ...kit, id: Date.now().toString() }]);
+  }, []);
+
+  const handleUpdateKit = useCallback((kit: Kit) => {
+    setKits(prev => prev.map(k => k.id === kit.id ? kit : k));
+  }, []);
+
+  const handleDeleteKit = useCallback((kitId: string) => {
+    setKits(prev => prev.filter(k => k.id !== kitId));
   }, []);
 
   const handleUpdateProduct = useCallback((product: Product) => {
@@ -84,7 +107,9 @@ function App() {
   const handlePrintTicket = useCallback((ticket: Ticket) => {
     const w = window.open('', '_blank');
     if (!w) return;
-    w.document.write(`<!DOCTYPE html><html><head><title>Ticket #${ticket.ticketNumber}</title><style>body{font-family:monospace;font-size:11px;width:200px;margin:0 auto;padding:5px}.c{text-align:center}.b{font-weight:bold}.l{border-top:1px dashed #000;margin:3px 0}.r{display:flex;justify-content:space-between;font-size:10px}</style></head><body><div class="c"><p class="b" style="font-size:14px">${businessName}</p><p>RFC: XAXX010101000</p><p>Av. Principal #123</p><p>Tel: (555) 123-4567</p></div><div class="l"></div><div class="c"><p class="b">TICKET DE VENTA</p><p>No. ${ticket.ticketNumber}</p><p>${ticket.date.toLocaleString('es-MX')}</p><p>Cajero: ${ticket.cashier}</p>${ticket.isOwnConsumption ? '<p class="b">CONSUMO PROPIO</p>' : ''}</div><div class="l"></div>${ticket.items.map(i => { const price = i.isCase ? i.product.casePrice : i.product.unitPrice; return `<div class="r"><span>${i.product.name}${i.isCase ? ' (Caja)' : ''}</span><span>${i.quantity}x$${price.toFixed(2)}</span></div>`; }).join('')}<div class="l"></div><div class="r"><span>Subtotal:</span><span>$${ticket.subtotal.toFixed(2)}</span></div>${ticket.discount > 0 ? `<div class="r"><span>Descuento:</span><span>-$${ticket.discount.toFixed(2)}</span></div>` : ''}<div class="r"><span>IVA (16%):</span><span>$${ticket.tax.toFixed(2)}</span></div><div class="l"></div><div class="r b"><span>TOTAL:</span><span>$${ticket.total.toFixed(2)}</span></div><div class="r"><span>Pago (${ticket.paymentMethod === 'cash' ? 'Efectivo' : ticket.paymentMethod === 'card' ? 'Tarjeta' : 'Transferencia'}):</span><span>$${ticket.amountPaid.toFixed(2)}</span></div>${ticket.paymentMethod === 'cash' ? `<div class="r b"><span>Cambio:</span><span>$${ticket.change.toFixed(2)}</span></div>` : ''}<div class="l"></div><div class="c"><p class="b">¡GRACIAS POR SU COMPRA!</p><p>${businessName}</p></div><script>window.print();window.close();</script></body></html>`);
+    const itemsHtml = ticket.items.map(i => { const price = i.isCase ? i.product.casePrice : i.product.unitPrice; return `<div class="r"><span>${i.product.name}${i.isCase ? ' (Caja)' : ''}</span><span>${i.quantity}x$${price.toFixed(2)}</span></div>`; }).join('');
+    const kitsHtml = ticket.kits ? ticket.kits.map(k => `<div class="r"><span>[KIT] ${k.kit.name}</span><span>${k.quantity}x$${k.kit.price.toFixed(2)}</span></div>`).join('') : '';
+    w.document.write(`<!DOCTYPE html><html><head><title>Ticket #${ticket.ticketNumber}</title><style>body{font-family:monospace;font-size:11px;width:200px;margin:0 auto;padding:5px}.c{text-align:center}.b{font-weight:bold}.l{border-top:1px dashed #000;margin:3px 0}.r{display:flex;justify-content:space-between;font-size:10px}</style></head><body><div class="c"><p class="b" style="font-size:14px">${businessName}</p><p>RFC: XAXX010101000</p><p>Av. Principal #123</p><p>Tel: (555) 123-4567</p></div><div class="l"></div><div class="c"><p class="b">TICKET DE VENTA</p><p>No. ${ticket.ticketNumber}</p><p>${ticket.date.toLocaleString('es-MX')}</p><p>Cajero: ${ticket.cashier}</p>${ticket.isOwnConsumption ? '<p class="b">CONSUMO PROPIO</p>' : ''}</div><div class="l"></div>${itemsHtml}${kitsHtml}<div class="l"></div><div class="r"><span>Subtotal:</span><span>$${ticket.subtotal.toFixed(2)}</span></div>${ticket.discount > 0 ? `<div class="r"><span>Descuento:</span><span>-$${ticket.discount.toFixed(2)}</span></div>` : ''}<div class="r"><span>IVA (16%):</span><span>$${ticket.tax.toFixed(2)}</span></div><div class="l"></div><div class="r b"><span>TOTAL:</span><span>$${ticket.total.toFixed(2)}</span></div><div class="r"><span>Pago (${ticket.paymentMethod === 'cash' ? 'Efectivo' : ticket.paymentMethod === 'card' ? 'Tarjeta' : 'Transferencia'}):</span><span>$${ticket.amountPaid.toFixed(2)}</span></div>${ticket.paymentMethod === 'cash' ? `<div class="r b"><span>Cambio:</span><span>$${ticket.change.toFixed(2)}</span></div>` : ''}<div class="l"></div><div class="c"><p class="b">¡GRACIAS POR SU COMPRA!</p><p>${businessName}</p></div><script>window.print();window.close();</script></body></html>`);
     w.document.close();
   }, [businessName]);
 
@@ -100,6 +125,7 @@ function App() {
         return (
           <POS
             products={products}
+            kits={kits}
             cashierName={currentUser.name}
             userRole={currentUser.role}
             adminPassword={adminPassword}
@@ -115,6 +141,16 @@ function App() {
             onAddProduct={handleAddProduct}
             onDeleteProduct={handleDeleteProduct}
             onUpdateProduct={handleUpdateProduct}
+          />
+        );
+      case 'kits':
+        return (
+          <Kits
+            kits={kits}
+            products={products}
+            onAddKit={handleAddKit}
+            onUpdateKit={handleUpdateKit}
+            onDeleteKit={handleDeleteKit}
           />
         );
       case 'adjustment':
