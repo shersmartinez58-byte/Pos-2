@@ -34,17 +34,17 @@ export const Layout: React.FC<LayoutProps> = ({ user, currentPage, onNavigate, o
   const filteredNav = navItems.filter(item => !item.adminOnly || user.role === 'admin');
 
   return (
-    <div className="h-screen flex bg-gradient-to-br from-slate-50 to-slate-100 overflow-hidden">
+    <div className="h-screen flex bg-slate-50 overflow-hidden">
       {/* Sidebar */}
-      <aside className="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col shadow-sm">
-        <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-blue-600 to-indigo-600">
+      <aside className="hidden md:flex w-64 bg-white border-r border-slate-200 flex-col">
+        <div className="p-6 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <span className="text-xl">🏪</span>
+            <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center">
+              <span className="text-lg">🏪</span>
             </div>
             <div>
-              <p className="font-bold text-white text-sm">San Juditas</p>
-              <p className="text-xs text-blue-100">Sistema POS</p>
+              <p className="font-semibold text-slate-800 text-sm">San Juditas</p>
+              <p className="text-xs text-slate-400">Sistema POS</p>
             </div>
           </div>
         </div>
@@ -54,28 +54,26 @@ export const Layout: React.FC<LayoutProps> = ({ user, currentPage, onNavigate, o
             <button
               key={item.page}
               onClick={() => onNavigate(item.page)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left group ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
                 currentPage === item.page
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-slate-900 text-white'
+                  : 'text-slate-600 hover:bg-slate-100'
               }`}
             >
-              <span className={`${currentPage === item.page ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'}`}>
-                {item.icon}
-              </span>
+              {item.icon}
               <span className="text-sm font-medium">{item.label}</span>
             </button>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-slate-100 bg-slate-50">
+        <div className="p-4 border-t border-slate-100">
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-sm">{user.name.charAt(0)}</span>
+            <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
+              <span className="text-slate-600 font-semibold text-sm">{user.name.charAt(0)}</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-slate-800 truncate">{user.name}</p>
-              <p className="text-xs text-slate-500 capitalize">{user.role === 'admin' ? 'Administrador' : 'Cajero'}</p>
+              <p className="text-sm font-medium text-slate-800 truncate">{user.name}</p>
+              <p className="text-xs text-slate-400 capitalize">{user.role === 'admin' ? 'Admin' : 'Cajero'}</p>
             </div>
           </div>
         </div>
@@ -118,62 +116,48 @@ export const Layout: React.FC<LayoutProps> = ({ user, currentPage, onNavigate, o
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between flex-shrink-0 shadow-sm">
+        <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              className="md:hidden p-2 hover:bg-slate-100 rounded-lg"
             >
               <Menu className="w-5 h-5 text-slate-600" />
             </button>
-            <div>
-              <h1 className="text-xl font-bold text-slate-800">
-                {navItems.find(n => n.page === currentPage)?.label || 'Dashboard'}
-              </h1>
-              <p className="text-xs text-slate-500 mt-0.5">Depósito San Juditas</p>
-            </div>
+            <h1 className="text-lg font-semibold text-slate-800">
+              {navItems.find(n => n.page === currentPage)?.label || 'Dashboard'}
+            </h1>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Current Date/Time */}
-            <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-slate-50 rounded-lg">
-              <Clock className="w-4 h-4 text-slate-400" />
-              <span className="text-sm text-slate-600 font-medium">
-                {new Date().toLocaleDateString('es-MX', { weekday: 'short', day: 'numeric', month: 'short' })}
-              </span>
-            </div>
+          <div className="relative">
+            <button
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors"
+            >
+              <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
+                <span className="text-slate-600 font-semibold text-sm">{user.name.charAt(0)}</span>
+              </div>
+              <div className="hidden sm:block text-left">
+                <p className="text-sm font-medium text-slate-800">{user.name}</p>
+              </div>
+              <ChevronDown className="w-4 h-4 text-slate-400" />
+            </button>
 
-            <div className="relative">
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors"
-              >
-                <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-full flex items-center justify-center shadow-sm">
-                  <span className="text-white font-bold text-sm">{user.name.charAt(0)}</span>
+            {userMenuOpen && (
+              <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-50">
+                <div className="px-4 py-2 border-b border-slate-100">
+                  <p className="text-sm font-medium text-slate-800">{user.name}</p>
+                  <p className="text-xs text-slate-400">@{user.username}</p>
                 </div>
-                <div className="hidden sm:block text-left">
-                  <p className="text-sm font-semibold text-slate-800">{user.name}</p>
-                  <p className="text-xs text-slate-500 capitalize">{user.role === 'admin' ? 'Admin' : 'Cajero'}</p>
-                </div>
-                <ChevronDown className="w-4 h-4 text-slate-400" />
-              </button>
-
-              {userMenuOpen && (
-                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-200 py-2 z-50">
-                  <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
-                    <p className="text-sm font-semibold text-slate-800">{user.name}</p>
-                    <p className="text-xs text-slate-500">@{user.username}</p>
-                  </div>
-                  <button
-                    onClick={onLogout}
-                    className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Cerrar Sesión
-                  </button>
-                </div>
-              )}
-            </div>
+                <button
+                  onClick={onLogout}
+                  className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Cerrar Sesión
+                </button>
+              </div>
+            )}
           </div>
         </header>
 

@@ -45,37 +45,37 @@ export const Dashboard: React.FC<DashboardProps> = ({ tickets, products }) => {
     <div className="p-6 space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-5 text-white shadow-lg">
+        <div className="bg-white rounded-xl p-5 border border-slate-200">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-green-100">Ventas Hoy</span>
-            <DollarSign className="w-6 h-6 text-green-200" />
+            <span className="text-sm font-medium text-slate-600">Ventas Hoy</span>
+            <DollarSign className="w-5 h-5 text-slate-400" />
           </div>
-          <p className="text-3xl font-bold">${todayTotal.toFixed(2)}</p>
-          <p className="text-xs text-green-100 mt-2">{todayTickets.length} transacciones</p>
+          <p className="text-2xl font-bold text-slate-800">${todayTotal.toFixed(2)}</p>
+          <p className="text-xs text-slate-500 mt-2">{todayTickets.length} transacciones</p>
         </div>
-        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-5 text-white shadow-lg">
+        <div className="bg-white rounded-xl p-5 border border-slate-200">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-blue-100">Ventas Semana</span>
-            <TrendingUp className="w-6 h-6 text-blue-200" />
+            <span className="text-sm font-medium text-slate-600">Ventas Semana</span>
+            <TrendingUp className="w-5 h-5 text-slate-400" />
           </div>
-          <p className="text-3xl font-bold">${weekTotal.toFixed(2)}</p>
-          <p className="text-xs text-blue-100 mt-2">{weekTickets.length} transacciones</p>
+          <p className="text-2xl font-bold text-slate-800">${weekTotal.toFixed(2)}</p>
+          <p className="text-xs text-slate-500 mt-2">{weekTickets.length} transacciones</p>
         </div>
-        <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl p-5 text-white shadow-lg">
+        <div className="bg-white rounded-xl p-5 border border-slate-200">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-purple-100">Artículos Hoy</span>
-            <ShoppingCart className="w-6 h-6 text-purple-200" />
+            <span className="text-sm font-medium text-slate-600">Artículos Hoy</span>
+            <ShoppingCart className="w-5 h-5 text-slate-400" />
           </div>
-          <p className="text-3xl font-bold">{todayItems}</p>
-          <p className="text-xs text-purple-100 mt-2">unidades vendidas</p>
+          <p className="text-2xl font-bold text-slate-800">{todayItems}</p>
+          <p className="text-xs text-slate-500 mt-2">unidades vendidas</p>
         </div>
-        <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl p-5 text-white shadow-lg">
+        <div className="bg-white rounded-xl p-5 border border-slate-200">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-amber-100">Stock Bajo</span>
-            <AlertTriangle className="w-6 h-6 text-amber-200" />
+            <span className="text-sm font-medium text-slate-600">Stock Bajo</span>
+            <AlertTriangle className="w-5 h-5 text-slate-400" />
           </div>
-          <p className="text-3xl font-bold">{lowStockProducts.length}</p>
-          <p className="text-xs text-amber-100 mt-2">productos alertados</p>
+          <p className="text-2xl font-bold text-slate-800">{lowStockProducts.length}</p>
+          <p className="text-xs text-slate-500 mt-2">productos alertados</p>
         </div>
       </div>
 

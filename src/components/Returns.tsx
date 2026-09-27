@@ -96,12 +96,12 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl p-6 text-white shadow-lg">
+      <div className="bg-white rounded-xl p-6 border border-slate-200">
         <div className="flex items-center gap-3">
-          <RotateCcw className="w-8 h-8" />
+          <RotateCcw className="w-8 h-8 text-slate-600" />
           <div>
-            <h2 className="text-2xl font-bold">Devoluciones</h2>
-            <p className="text-orange-100 text-sm">Procesar devoluciones de productos y kits</p>
+            <h2 className="text-2xl font-bold text-slate-800">Devoluciones</h2>
+            <p className="text-slate-500 text-sm">Procesar devoluciones de productos y kits</p>
           </div>
         </div>
       </div>
@@ -139,7 +139,7 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
                     key={ticket.id}
                     onClick={() => handleSelectTicket(ticket)}
                     className={`w-full p-4 text-left hover:bg-slate-50 transition-colors ${
-                      selectedTicket?.id === ticket.id ? 'bg-orange-50 border-l-4 border-l-orange-500' : ''
+                      selectedTicket?.id === ticket.id ? 'bg-slate-50 border-l-4 border-l-slate-900' : ''
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
@@ -207,7 +207,7 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
                           onClick={() => toggleItem(itemId)}
                           className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
                             isSelected 
-                              ? 'border-orange-500 bg-orange-50' 
+                              ? 'border-slate-900 bg-slate-50' 
                               : 'border-slate-200 hover:border-slate-300'
                           }`}
                         >
@@ -225,7 +225,7 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
                               <span className="text-sm font-bold text-slate-800">
                                 ${(item.isCase ? item.product.casePrice : item.product.unitPrice) * item.quantity}
                               </span>
-                              {isSelected && <CheckCircle className="w-5 h-5 text-orange-500" />}
+                              {isSelected && <CheckCircle className="w-5 h-5 text-slate-900" />}
                             </div>
                           </div>
                         </button>
@@ -248,7 +248,7 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
                           onClick={() => toggleKit(kitItem.kit.id)}
                           className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
                             isSelected 
-                              ? 'border-purple-500 bg-purple-50' 
+                              ? 'border-slate-900 bg-slate-50' 
                               : 'border-slate-200 hover:border-slate-300'
                           }`}
                         >
@@ -265,7 +265,7 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
                               <span className="text-sm font-bold text-slate-800">
                                 ${kitItem.kit.price * kitItem.quantity}
                               </span>
-                              {isSelected && <CheckCircle className="w-5 h-5 text-purple-500" />}
+                              {isSelected && <CheckCircle className="w-5 h-5 text-slate-900" />}
                             </div>
                           </div>
                         </button>
@@ -277,10 +277,10 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
 
               {/* Refund Summary */}
               {(selectedItems.size > 0 || selectedKits.size > 0) && (
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+                <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-semibold text-slate-700">Total a Reembolsar:</span>
-                    <span className="text-2xl font-bold text-green-600">
+                    <span className="text-2xl font-bold text-slate-800">
                       ${calculateRefund().toFixed(2)}
                     </span>
                   </div>
@@ -295,7 +295,7 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
                 <button
                   onClick={() => setShowConfirmation(true)}
                   disabled={selectedItems.size === 0 && selectedKits.size === 0}
-                  className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 py-3 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   <RotateCcw className="w-5 h-5" />
                   Procesar Devolución
@@ -306,7 +306,7 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
                     setSelectedItems(new Set());
                     setSelectedKits(new Set());
                   }}
-                  className="px-6 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg transition-colors"
+                  className="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors"
                 >
                   Cancelar
                 </button>
@@ -321,8 +321,8 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                <RotateCcw className="w-6 h-6 text-orange-600" />
+              <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center">
+                <RotateCcw className="w-6 h-6 text-slate-600" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-slate-800">Confirmar Devolución</h3>
@@ -346,7 +346,7 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
                 </div>
                 <div className="flex justify-between pt-2 border-t border-slate-200">
                   <span className="font-semibold text-slate-700">Reembolso:</span>
-                  <span className="text-xl font-bold text-green-600">${calculateRefund().toFixed(2)}</span>
+                  <span className="text-xl font-bold text-slate-800">${calculateRefund().toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -354,14 +354,14 @@ export const Returns: React.FC<ReturnsProps> = ({ tickets, products, kits, onRet
             <div className="flex gap-3">
               <button
                 onClick={handleReturn}
-                className="flex-1 py-3 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <CheckCircle className="w-5 h-5" />
                 Confirmar
               </button>
               <button
                 onClick={() => setShowConfirmation(false)}
-                className="flex-1 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <XCircle className="w-5 h-5" />
                 Cancelar
