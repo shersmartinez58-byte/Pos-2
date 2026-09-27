@@ -81,6 +81,7 @@ function App() {
 
       const unsubscribeProducts = subscribeToProducts((productsData) => {
         if (mounted) {
+          console.log('📦 Productos recibidos de Firebase:', productsData.length, 'productos');
           // Solo cargar productos de Firebase, no crear automáticamente
           setProducts(productsData);
         }
@@ -213,24 +214,28 @@ function App() {
   }, [products, firebaseError]);
 
   const handleAddProduct = useCallback(async (product: Omit<Product, 'id'>) => {
+    console.log('➕ Agregando producto:', product.name);
     const newProduct = { ...product, id: Date.now().toString() };
     setProducts(prev => [...prev, newProduct]);
     if (!firebaseError) {
       try {
         await addProduct(product);
+        console.log('✅ Producto agregado a Firebase');
       } catch (error) {
-        console.error('Error adding product:', error);
+        console.error('❌ Error adding product:', error);
       }
     }
   }, [firebaseError]);
 
   const handleDeleteProduct = useCallback(async (productId: string) => {
+    console.log('🗑️ Eliminando producto:', productId);
     setProducts(prev => prev.filter(p => p.id !== productId));
     if (!firebaseError) {
       try {
         await deleteProduct(productId);
+        console.log('✅ Producto eliminado de Firebase');
       } catch (error) {
-        console.error('Error deleting product:', error);
+        console.error('❌ Error deleting product:', error);
       }
     }
   }, [firebaseError]);
