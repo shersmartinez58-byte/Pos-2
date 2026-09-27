@@ -27,7 +27,6 @@ import {
   updateKit,
   deleteKit,
   addTicket,
-  addUser,
   updateUser,
   deleteUser,
   addPromotion,
@@ -68,20 +67,12 @@ function App() {
         if (mounted) {
           clearTimeout(timeoutId);
           setUsers(usersData.length > 0 ? usersData : defaultUsers);
-          if (usersData.length === 0) {
-            // Initialize default users if empty
-            defaultUsers.forEach(user => addUser(user).catch(console.error));
-          }
         }
       });
 
       const unsubscribeProducts = subscribeToProducts((productsData) => {
         if (mounted) {
-          setProducts(productsData.length > 0 ? productsData : initialProducts);
-          if (productsData.length === 0) {
-            // Initialize default products if empty
-            initialProducts.forEach(product => addProduct(product).catch(console.error));
-          }
+          setProducts(productsData);
         }
       });
 
