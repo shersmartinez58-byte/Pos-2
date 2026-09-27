@@ -27,6 +27,7 @@ import {
   updateKit,
   deleteKit,
   addTicket,
+  addUser,
   updateUser,
   deleteUser,
   addPromotion,
@@ -41,9 +42,9 @@ function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   
-  // Firebase state
-  const [users, setUsers] = useState<User[]>(defaultUsers);
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  // Firebase state - todo empieza vacío
+  const [users, setUsers] = useState<User[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [kits, setKits] = useState<Kit[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [promotions, setPromotions] = useState<Promotion[]>([]);
@@ -59,6 +60,9 @@ function App() {
       if (mounted) {
         setLoading(false);
         setFirebaseError(true);
+        // Si Firebase falla, usar datos locales por defecto
+        setUsers(defaultUsers);
+        setProducts(initialProducts);
       }
     }, 5000); // 5 second timeout
 
@@ -66,12 +70,19 @@ function App() {
       const unsubscribeUsers = subscribeToUsers((usersData) => {
         if (mounted) {
           clearTimeout(timeoutId);
-          setUsers(usersData.length > 0 ? usersData : defaultUsers);
+          // Si no hay usuarios en Firebase, crear usuarios por defecto para poder hacer login
+          if (usersData.length === 0) {
+            setUsers(defaultUsers); // Actualizar estado local inmediatamente
+            defaultUsers.forEach(user => addUser(user).catch(console.error));
+          } else {
+            setUsers(usersData);
+          }
         }
       });
 
       const unsubscribeProducts = subscribeToProducts((productsData) => {
         if (mounted) {
+          // Solo cargar productos de Firebase, no crear automáticamente
           setProducts(productsData);
         }
       });
