@@ -184,7 +184,7 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
     if (!t) return;
     const w = window.open('', '_blank');
     if (!w) return;
-    w.document.write(`<!DOCTYPE html><html><head><title>Ticket</title><style>body{font-family:monospace;font-size:11px;width:200px;margin:0 auto;padding:5px}.c{text-align:center}.b{font-weight:bold}.l{border-top:1px dashed #000;margin:3px 0}.r{display:flex;justify-content:space-between;font-size:10px}</style></head><body><div class="c"><p class="b" style="font-size:14px">DEPÓSITO SAN JUDITAS</p><p>Ticket #${t.ticketNumber}</p><p>${t.date.toLocaleString('es-MX')}</p><p>Cajero: ${t.cashier}</p>${t.isOwnConsumption ? '<p class="b">CONSUMO PROPIO</p>' : ''}</div><div class="l"></div>${t.items.map(i => `<div class="r"><span>${i.product.icon} ${i.product.name}${i.isCase ? ' (Caja)' : ''}</span><span>${i.quantity}x$${getItemPrice(i.product, i.isCase, i.isOwnConsumption).toFixed(2)}</span></div>`).join('')}<div class="l"></div><div class="r"><span>Subtotal:</span><span>$${t.subtotal.toFixed(2)}</span></div><div class="r"><span>IVA:</span><span>$${t.tax.toFixed(2)}</span></div><div class="l"></div><div class="r b"><span>TOTAL:</span><span>$${t.total.toFixed(2)}</span></div><div class="r"><span>Pago:</span><span>$${t.amountPaid.toFixed(2)}</span></div>${t.paymentMethod === 'cash' ? `<div class="r b"><span>Cambio:</span><span>$${t.change.toFixed(2)}</span></div>` : ''}<div class="l"></div><div class="c"><p class="b">¡GRACIAS!</p></div><script>print();close();</script></body></html>`);
+    w.document.write(`<!DOCTYPE html><html><head><title>Ticket</title><style>body{font-family:monospace;font-size:11px;width:200px;margin:0 auto;padding:5px}.c{text-align:center}.b{font-weight:bold}.l{border-top:1px dashed #000;margin:3px 0}.r{display:flex;justify-content:space-between;font-size:10px}</style></head><body><div class="c"><p class="b" style="font-size:14px">DEPÓSITO SAN JUDITAS</p><p>Ticket #${t.ticketNumber}</p><p>${t.date.toLocaleString('es-MX')}</p><p>Cajero: ${t.cashier}</p>${t.isOwnConsumption ? '<p class="b">CONSUMO PROPIO</p>' : ''}</div><div class="l"></div>${t.items.map(i => `<div class="r"><span>${i.product.name}${i.isCase ? ' (Caja)' : ''}</span><span>${i.quantity}x$${getItemPrice(i.product, i.isCase, i.isOwnConsumption).toFixed(2)}</span></div>`).join('')}<div class="l"></div><div class="r"><span>Subtotal:</span><span>$${t.subtotal.toFixed(2)}</span></div><div class="r"><span>IVA:</span><span>$${t.tax.toFixed(2)}</span></div><div class="l"></div><div class="r b"><span>TOTAL:</span><span>$${t.total.toFixed(2)}</span></div><div class="r"><span>Pago:</span><span>$${t.amountPaid.toFixed(2)}</span></div>${t.paymentMethod === 'cash' ? `<div class="r b"><span>Cambio:</span><span>$${t.change.toFixed(2)}</span></div>` : ''}<div class="l"></div><div class="c"><p class="b">¡GRACIAS!</p></div><script>print();close();</script></body></html>`);
     w.document.close();
   }, [lastTicket, getItemPrice]);
 
@@ -252,7 +252,6 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
             {filteredProducts.map(product => (
               <div key={product.id} className="bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-md transition-all group">
                 <div className="p-2 text-center">
-                  <div className="text-3xl mb-1">{product.icon}</div>
                   <p className="text-[11px] font-medium text-slate-800 truncate leading-tight">{product.name}</p>
                   <p className="text-[10px] text-slate-400 mt-0.5">Stock: {product.stock}</p>
                 </div>
@@ -328,12 +327,11 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
                   className={`p-2.5 cursor-pointer transition-colors ${selectedCartIndex === index ? 'bg-slate-50' : 'hover:bg-slate-50'}`}
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">{item.product.icon}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-medium text-slate-800 truncate">{item.product.name}</p>
                       <p className="text-[10px] text-slate-500">
-                        {item.isCase ? `📦 Caja (${item.product.caseQty})` : '👤 Unidad'} • ${getItemPrice(item.product, item.isCase, item.isOwnConsumption).toFixed(2)}
-                        {item.isOwnConsumption && <span className="ml-1 text-amber-600">🏠</span>}
+                        {item.isCase ? `Caja (${item.product.caseQty})` : 'Unidad'} • ${getItemPrice(item.product, item.isCase, item.isOwnConsumption).toFixed(2)}
+                        {item.isOwnConsumption && <span className="ml-1 text-amber-600 font-medium">(Consumo)</span>}
                       </p>
                     </div>
                     <div className="flex items-center gap-1">
@@ -494,7 +492,7 @@ export const POS: React.FC<POSProps> = ({ products, cashierName, userRole, admin
                 </div>
                 {lastTicket.items.map((item, i) => (
                   <div key={i} className="flex justify-between py-0.5">
-                    <span className="truncate pr-1">{item.product.icon} {item.product.name}{item.isCase ? ' (Caja)' : ''}</span>
+                    <span className="truncate pr-1">{item.product.name}{item.isCase ? ' (Caja)' : ''}</span>
                     <span>{item.quantity}x${getItemPrice(item.product, item.isCase, item.isOwnConsumption).toFixed(2)}</span>
                   </div>
                 ))}

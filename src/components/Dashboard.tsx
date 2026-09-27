@@ -20,11 +20,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ tickets, products }) => {
 
   const lastSales = [...tickets].reverse().slice(0, 5);
 
-  const productSales: Record<string, { name: string; icon: string; qty: number; total: number }> = {};
+  const productSales: Record<string, { name: string; qty: number; total: number }> = {};
   tickets.forEach(t => {
     t.items.forEach(item => {
       const key = item.product.id;
-      if (!productSales[key]) productSales[key] = { name: item.product.name, icon: item.product.icon, qty: 0, total: 0 };
+      if (!productSales[key]) productSales[key] = { name: item.product.name, qty: 0, total: 0 };
       const price = item.isCase ? item.product.casePrice : item.product.unitPrice;
       productSales[key].qty += item.quantity;
       productSales[key].total += price * item.quantity;
@@ -113,10 +113,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ tickets, products }) => {
               <div className="space-y-2">
                 {topProducts.map((product, i) => (
                   <div key={i} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{product.icon}</span>
-                      <span className="text-xs text-slate-700">{product.name}</span>
-                    </div>
+                    <span className="text-xs text-slate-700">{product.name}</span>
                     <div className="text-right">
                       <p className="text-xs font-bold text-slate-800">{product.qty}</p>
                       <p className="text-[10px] text-slate-400">${product.total.toFixed(2)}</p>
@@ -138,13 +135,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ tickets, products }) => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {lowStockProducts.map(p => (
               <div key={p.id} className="bg-white rounded-lg p-2 border border-amber-100">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{p.icon}</span>
-                  <div>
-                    <p className="text-xs font-medium text-slate-800 truncate">{p.name}</p>
-                    <p className="text-[10px] text-amber-600">Stock: {p.stock} / Mín: {p.minStock}</p>
-                  </div>
-                </div>
+                <p className="text-xs font-medium text-slate-800 truncate">{p.name}</p>
+                <p className="text-[10px] text-amber-600">Stock: {p.stock} / Mín: {p.minStock}</p>
               </div>
             ))}
           </div>

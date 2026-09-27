@@ -141,7 +141,7 @@ export const SalesHistory: React.FC<SalesHistoryProps> = ({ tickets, onPrint }) 
                 const price = item.isCase ? item.product.casePrice : item.product.unitPrice;
                 return (
                   <div key={i} className="flex justify-between">
-                    <span className="truncate pr-2">{item.product.icon} {item.product.name}{item.isCase ? ' (Caja)' : ''}</span>
+                    <span className="truncate pr-2">{item.product.name}{item.isCase ? ' (Caja)' : ''}</span>
                     <span>{item.quantity}x${price.toFixed(2)}</span>
                   </div>
                 );

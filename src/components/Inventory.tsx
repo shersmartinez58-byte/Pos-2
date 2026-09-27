@@ -59,7 +59,7 @@ export const Inventory: React.FC<InventoryProps> = ({ products, onUpdateStock, o
     setEditingProduct(null);
   };
 
-  const iconOptions = ['📦', '🥤', '💧', '🧃', '☕', '🍟', '🔺', '🍪', '🍫', '🍭', '🍞', '🫓', '🥛', '🍶', '🧀', '🥚', '🍚', '🫘', '🛢️', '🐟', '🍾', '🍺', '🥔', '🍬', '🍎', '🍌', '🥫', '🧴', '🧻', '🧼'];
+  
 
   return (
     <div className="p-4 space-y-4">
@@ -113,16 +113,6 @@ export const Inventory: React.FC<InventoryProps> = ({ products, onUpdateStock, o
             <button onClick={() => setShowAddForm(false)} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="col-span-2 md:col-span-1">
-              <label className="text-[10px] text-slate-500 mb-1 block">Icono</label>
-              <div className="flex gap-1 flex-wrap">
-                {iconOptions.slice(0, 12).map(icon => (
-                  <button key={icon} onClick={() => setNewProduct({ ...newProduct, icon })} className={`w-8 h-8 rounded text-lg ${newProduct.icon === icon ? 'bg-slate-900 ring-2 ring-slate-400' : 'bg-slate-100 hover:bg-slate-200'}`}>
-                    {icon}
-                  </button>
-                ))}
-              </div>
-            </div>
             <div className="col-span-2 md:col-span-1">
               <label className="text-[10px] text-slate-500 mb-1 block">Nombre</label>
               <input type="text" value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} placeholder="Nombre del producto" className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-xs" />
@@ -184,22 +174,9 @@ export const Inventory: React.FC<InventoryProps> = ({ products, onUpdateStock, o
               <button onClick={() => setEditingProduct(null)} className="text-slate-400 hover:text-slate-600"><X className="w-4 h-4" /></button>
             </div>
             <div className="p-4 space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="text-4xl">{editingProduct.icon}</div>
-                <div className="flex-1">
-                  <label className="text-[10px] text-slate-500 mb-1 block">Nombre</label>
-                  <input type="text" value={editingProduct.name} onChange={e => setEditingProduct({ ...editingProduct, name: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm" />
-                </div>
-              </div>
               <div>
-                <label className="text-[10px] text-slate-500 mb-1 block">Icono</label>
-                <div className="flex gap-1 flex-wrap">
-                  {iconOptions.map(icon => (
-                    <button key={icon} onClick={() => setEditingProduct({ ...editingProduct, icon })} className={`w-8 h-8 rounded text-lg ${editingProduct.icon === icon ? 'bg-slate-900 ring-2 ring-slate-400' : 'bg-slate-100 hover:bg-slate-200'}`}>
-                      {icon}
-                    </button>
-                  ))}
-                </div>
+                <label className="text-[10px] text-slate-500 mb-1 block">Nombre</label>
+                <input type="text" value={editingProduct.name} onChange={e => setEditingProduct({ ...editingProduct, name: e.target.value })} className="w-full px-2 py-1.5 border border-slate-200 rounded-lg text-sm" />
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
@@ -270,10 +247,7 @@ export const Inventory: React.FC<InventoryProps> = ({ products, onUpdateStock, o
               {filtered.map(product => (
                 <tr key={product.id} className="hover:bg-slate-50">
                   <td className="p-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">{product.icon}</span>
-                      <span className="font-medium text-slate-800">{product.name}</span>
-                    </div>
+                    <span className="font-medium text-slate-800">{product.name}</span>
                   </td>
                   <td className="p-2 font-mono text-[10px] text-slate-500">
                     <div>U: {product.barcode}</div>
