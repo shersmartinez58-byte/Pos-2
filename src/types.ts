@@ -90,4 +90,4 @@ export interface InventoryAdjustment {
   user: string;
 }
 
-export type Page = 'dashboard' | 'pos' | 'inventory' | 'kits' | 'adjustment' | 'promotions' | 'history' | 'settings';
+export type Page = 'dashboard' | 'pos' | 'returns' | 'inventory' | 'kits' | 'adjustment' | 'promotions' | 'history' | 'settings';

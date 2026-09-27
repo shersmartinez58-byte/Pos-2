@@ -6,13 +6,14 @@ import { LoginScreen } from './components/LoginScreen';
 import { Layout } from './components/Layout';
 import { Dashboard } from './components/Dashboard';
 import { POS } from './components/POS';
+import { Returns } from './components/Returns';
 import { Inventory } from './components/Inventory';
 import { Kits } from './components/Kits';
 import { InventoryAdjustment } from './components/InventoryAdjustment';
 import { Promotions } from './components/Promotions';
 import { SalesHistory } from './components/SalesHistory';
 import { Settings } from './components/Settings';
-import { Kit } from './types';
+import { Kit, CartItem, CartKitItem } from './types';
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -75,6 +76,30 @@ function App() {
     setKits(prev => prev.filter(k => k.id !== kitId));
   }, []);
 
+  const handleReturn = useCallback((ticketId: string, returnedItems: CartItem[], returnedKits: CartKitItem[]) => {
+    // Reintegrar stock de productos
+    setProducts(prev => prev.map(p => {
+      const returnedItem = returnedItems.find(i => i.product.id === p.id);
+      if (returnedItem) {
+        const qty = returnedItem.isCase ? returnedItem.quantity * p.caseQty : returnedItem.quantity;
+        return { ...p, stock: p.stock + qty };
+      }
+      return p;
+    }));
+
+    // Reintegrar stock de kits
+    setKits(prev => prev.map(k => {
+      const returnedKit = returnedKits.find(rk => rk.kit.id === k.id);
+      if (returnedKit) {
+        return { ...k, stock: k.stock + returnedKit.quantity };
+      }
+      return k;
+    }));
+
+    // Marcar ticket como devuelto (opcional: podrías agregar un campo 'returned' al Ticket)
+    // Por ahora solo actualizamos el stock
+  }, []);
+
   const handleUpdateProduct = useCallback((product: Product) => {
     setProducts(prev => prev.map(p => p.id === product.id ? product : p));
   }, []);
@@ -131,6 +156,15 @@ function App() {
             adminPassword={adminPassword}
             onSaleComplete={handleSaleComplete}
             tickets={tickets}
+          />
+        );
+      case 'returns':
+        return (
+          <Returns
+            tickets={tickets}
+            products={products}
+            kits={kits}
+            onReturn={handleReturn}
           />
         );
       case 'inventory':
