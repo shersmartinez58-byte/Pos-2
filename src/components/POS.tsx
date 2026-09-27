@@ -18,7 +18,6 @@ export const POS: React.FC<POSProps> = ({ products, kits, cashierName, userRole,
   const [cartKits, setCartKits] = useState<{ kit: Kit; quantity: number; isOwnConsumption: boolean }[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCartIndex, setSelectedCartIndex] = useState(-1);
-  const [activeTab, setActiveTab] = useState<'products' | 'kits'>('products');
   const [showPayment, setShowPayment] = useState(false);
   const [showTicket, setShowTicket] = useState(false);
   const [showAdminAuth, setShowAdminAuth] = useState(false);
@@ -237,10 +236,6 @@ export const POS: React.FC<POSProps> = ({ products, kits, cashierName, userRole,
     !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.barcode.includes(searchTerm) || (p.barcodeCase && p.barcodeCase.includes(searchTerm))
   );
 
-  const filteredKits = kits.filter(k =>
-    k.active && (!searchTerm || k.name.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
   const change = Math.max(0, parseFloat(amountPaid || '0') - total);
   const quickAmounts = [Math.ceil(total), Math.ceil(total / 50) * 50, Math.ceil(total / 100) * 100, Math.ceil(total / 500) * 500].filter((v, i, a) => a.indexOf(v) === i && v >= total).slice(0, 4);
 
@@ -250,28 +245,13 @@ export const POS: React.FC<POSProps> = ({ products, kits, cashierName, userRole,
       <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200">
         {/* Search */}
         <div className="p-3 bg-white border-b border-slate-200 space-y-2">
-          {/* Tabs */}
-          <div className="flex gap-1">
-            <button
-              onClick={() => setActiveTab('products')}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'products' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'}`}
-            >
-              Productos
-            </button>
-            <button
-              onClick={() => setActiveTab('kits')}
-              className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${activeTab === 'kits' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'}`}
-            >
-              Kits ({kits.filter(k => k.active).length})
-            </button>
-          </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               ref={searchRef}
               id="search-input"
               type="text"
-              placeholder={activeTab === 'products' ? "Buscar producto o escanear código..." : "Buscar kit..."}
+              placeholder="Buscar producto o escanear código..."
               value={searchTerm}
               onChange={e => handleSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
@@ -297,18 +277,24 @@ export const POS: React.FC<POSProps> = ({ products, kits, cashierName, userRole,
 
         {/* Product Grid */}
         <div className="flex-1 overflow-y-auto p-3">
-          {activeTab === 'products' ? (
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
-              {filteredProducts.map(product => (
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+            {filteredProducts.map(product => {
+              // Buscar si este producto está en algún kit activo
+              const productKits = kits.filter(kit => 
+                kit.active && kit.items.some(item => item.productId === product.id)
+              );
+              const hasKit = productKits.length > 0;
+              
+              return (
                 <div key={product.id} className="bg-white border border-slate-200 rounded-lg overflow-hidden hover:shadow-md transition-all group">
                   <div className="p-2 text-center">
                     <p className="text-[11px] font-medium text-slate-800 truncate leading-tight">{product.name}</p>
                     <p className="text-[10px] text-slate-400 mt-0.5">Stock: {product.stock}</p>
                   </div>
-                  <div className="border-t border-slate-100 grid grid-cols-2">
+                  <div className={`border-t border-slate-100 grid ${hasKit ? 'grid-cols-3' : 'grid-cols-2'}`}>
                     <button
                       onClick={() => addToCart(product, false)}
-                      className={`py-1.5 text-[10px] font-medium transition-colors ${!defaultIsCase ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
+                      className={`py-1.5 text-[10px] font-medium transition-colors ${!defaultIsCase && !hasKit ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
                     >
                       <div>Unidad</div>
                       <div className="font-bold">${product.unitPrice.toFixed(2)}</div>
@@ -316,50 +302,26 @@ export const POS: React.FC<POSProps> = ({ products, kits, cashierName, userRole,
                     {product.caseQty > 1 && (
                       <button
                         onClick={() => addToCart(product, true)}
-                        className={`py-1.5 text-[10px] font-medium transition-colors border-l border-slate-100 ${defaultIsCase ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
+                        className={`py-1.5 text-[10px] font-medium transition-colors border-l border-slate-100 ${defaultIsCase && !hasKit ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100'}`}
                       >
                         <div>Caja ({product.caseQty})</div>
                         <div className="font-bold">${product.casePrice.toFixed(2)}</div>
                       </button>
                     )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              {filteredKits.map(kit => (
-                <button
-                  key={kit.id}
-                  onClick={() => addKitToCart(kit)}
-                  className="bg-white border border-slate-200 rounded-lg p-3 hover:shadow-md transition-all text-left"
-                >
-                  <p className="text-xs font-medium text-slate-800 truncate">{kit.name}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">Stock: {kit.stock}</p>
-                  <p className="text-sm font-bold text-slate-900 mt-1">${kit.price.toFixed(2)}</p>
-                  <div className="flex flex-wrap gap-0.5 mt-1">
-                    {kit.items.slice(0, 3).map((item, i) => {
-                      const product = products.find(p => p.id === item.productId);
-                      return (
-                        <span key={i} className="text-[9px] bg-slate-100 px-1 py-0.5 rounded text-slate-500">
-                          {product?.name?.substring(0, 10) || '?'} x{item.quantity}
-                        </span>
-                      );
-                    })}
-                    {kit.items.length > 3 && (
-                      <span className="text-[9px] text-slate-400">+{kit.items.length - 3}</span>
+                    {hasKit && (
+                      <button
+                        onClick={() => addKitToCart(productKits[0])}
+                        className={`py-1.5 text-[10px] font-medium transition-colors border-l border-slate-100 bg-purple-50 text-purple-700 hover:bg-purple-100`}
+                      >
+                        <div>Kit</div>
+                        <div className="font-bold">${productKits[0].price.toFixed(2)}</div>
+                      </button>
                     )}
                   </div>
-                </button>
-              ))}
-              {filteredKits.length === 0 && (
-                <div className="col-span-full text-center py-8 text-slate-400">
-                  <Package className="w-10 h-10 mx-auto mb-2 opacity-30" />
-                  <p className="text-xs">No hay kits disponibles</p>
                 </div>
-              )}
-            </div>
-          )}
+              );
+            })}
+          </div>
         </div>
       </div>
 
