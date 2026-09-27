@@ -18,6 +18,8 @@ export const Inventory: React.FC<InventoryProps> = ({ products, onUpdateStock, o
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  console.log('📋 Inventory renderizado con', products.length, 'productos');
+
   // Add form state
   const [newProduct, setNewProduct] = useState({
     barcode: '', barcodeCase: '', name: '', icon: '📦',

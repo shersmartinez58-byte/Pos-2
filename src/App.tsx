@@ -69,10 +69,15 @@ function App() {
       const unsubscribeUsers = subscribeToUsers((usersData) => {
         if (mounted) {
           clearTimeout(timeoutId);
+          console.log('👥 Usuarios recibidos de Firebase:', usersData.length);
           // Si no hay usuarios en Firebase, crear usuarios por defecto para poder hacer login
           if (usersData.length === 0) {
+            console.log('⚠️ No hay usuarios, creando usuarios por defecto');
             setUsers(defaultUsers); // Actualizar estado local inmediatamente
-            defaultUsers.forEach(user => addUser(user).catch(console.error));
+            defaultUsers.forEach(user => {
+              console.log('➕ Creando usuario:', user.username);
+              addUser(user).catch(console.error);
+            });
           } else {
             setUsers(usersData);
           }
@@ -82,6 +87,9 @@ function App() {
       const unsubscribeProducts = subscribeToProducts((productsData) => {
         if (mounted) {
           console.log('📦 Productos recibidos de Firebase:', productsData.length, 'productos');
+          if (productsData.length > 0) {
+            console.log('🔍 Primer producto:', productsData[0]?.name, 'ID:', productsData[0]?.id);
+          }
           // Solo cargar productos de Firebase, no crear automáticamente
           setProducts(productsData);
         }
