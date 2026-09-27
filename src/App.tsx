@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { User, Page, Product, Ticket, Promotion, InventoryAdjustment as AdjustmentType, Kit, CartItem, CartKitItem } from './types';
-import { products as initialProducts } from './data/products';
 import { defaultUsers } from './data/users';
 import { LoginScreen } from './components/LoginScreen';
 import { Layout } from './components/Layout';
@@ -60,9 +59,9 @@ function App() {
       if (mounted) {
         setLoading(false);
         setFirebaseError(true);
-        // Si Firebase falla, usar datos locales por defecto
+        // Si Firebase falla, solo cargar usuarios por defecto para poder hacer login
         setUsers(defaultUsers);
-        setProducts(initialProducts);
+        // NO cargar productos automáticamente
       }
     }, 5000); // 5 second timeout
 
